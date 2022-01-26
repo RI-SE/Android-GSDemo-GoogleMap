@@ -12,7 +12,7 @@ public class TestObject {
   private transient long swigCPtr;
   protected transient boolean swigCMemOwn;
 
-  public TestObject(long cPtr, boolean cMemoryOwn) {
+  protected TestObject(long cPtr, boolean cMemoryOwn) {
     swigCMemOwn = cMemoryOwn;
     swigCPtr = cPtr;
   }
@@ -40,12 +40,12 @@ public class TestObject {
     isoObjectJNI.TestObject_disconnect(swigCPtr, this);
   }
 
-  public SWIGTYPE_p_std__string getCurrentStateName() {
-    return new SWIGTYPE_p_std__string(isoObjectJNI.TestObject_getCurrentStateName(swigCPtr, this), true);
+  public String getCurrentStateName() {
+    return isoObjectJNI.TestObject_getCurrentStateName(swigCPtr, this);
   }
 
-  public SWIGTYPE_p_std__string getName() {
-    return new SWIGTYPE_p_std__string(isoObjectJNI.TestObject_getName(swigCPtr, this), true);
+  public String getName() {
+    return isoObjectJNI.TestObject_getName(swigCPtr, this);
   }
 
   public CartesianPosition getPosition() {
@@ -76,12 +76,211 @@ public class TestObject {
     return new GeographicPositionType(isoObjectJNI.TestObject_getOrigin(swigCPtr, this), true);
   }
 
-  public SWIGTYPE_p_std__string getLocalIP() {
-    return new SWIGTYPE_p_std__string(isoObjectJNI.TestObject_getLocalIP(swigCPtr, this), true);
+  public String getLocalIP() {
+    return isoObjectJNI.TestObject_getLocalIP(swigCPtr, this);
   }
 
   public long getTransmitterID() {
     return isoObjectJNI.TestObject_getTransmitterID(swigCPtr, this);
+  }
+
+  public void handleAbort() {
+    isoObjectJNI.TestObject_handleAbort(swigCPtr, this);
+  }
+
+  public void setPosition(CartesianPosition pos) {
+    isoObjectJNI.TestObject_setPosition(swigCPtr, this, CartesianPosition.getCPtr(pos), pos);
+  }
+
+  public void setSpeed(SpeedType spd) {
+    isoObjectJNI.TestObject_setSpeed(swigCPtr, this, SpeedType.getCPtr(spd), spd);
+  }
+
+  public void setAcceleration(AccelerationType acc) {
+    isoObjectJNI.TestObject_setAcceleration(swigCPtr, this, AccelerationType.getCPtr(acc), acc);
+  }
+
+  public void setDriveDirection(DriveDirectionType drd) {
+    isoObjectJNI.TestObject_setDriveDirection(swigCPtr, this, drd.swigValue());
+  }
+
+  public void setObjectState(ObjectStateID ost) {
+    isoObjectJNI.TestObject_setObjectState(swigCPtr, this, ost.swigValue());
+  }
+
+  public void setName(String nm) {
+    isoObjectJNI.TestObject_setName(swigCPtr, this, nm);
+  }
+
+  public void setReadyToArm(int rdy) {
+    isoObjectJNI.TestObject_setReadyToArm(swigCPtr, this, rdy);
+  }
+
+  public void setErrorState(char err) {
+    isoObjectJNI.TestObject_setErrorState(swigCPtr, this, err);
+  }
+
+  public int handleVendorSpecificMessage(int msgType, SWIGTYPE_p_std__vectorT_char_t data) {
+    return isoObjectJNI.TestObject_handleVendorSpecificMessage(swigCPtr, this, msgType, SWIGTYPE_p_std__vectorT_char_t.getCPtr(data));
+  }
+
+  public Unknown createUnknown() {
+    long cPtr = isoObjectJNI.TestObject_createUnknown(swigCPtr, this);
+    return (cPtr == 0) ? null : new Unknown(cPtr, false);
+  }
+
+  public Off createOff() {
+    long cPtr = isoObjectJNI.TestObject_createOff(swigCPtr, this);
+    return (cPtr == 0) ? null : new Off(cPtr, false);
+  }
+
+  public Init createInit() {
+    long cPtr = isoObjectJNI.TestObject_createInit(swigCPtr, this);
+    return (cPtr == 0) ? null : new Init(cPtr, false);
+  }
+
+  public Armed createArmed() {
+    long cPtr = isoObjectJNI.TestObject_createArmed(swigCPtr, this);
+    return (cPtr == 0) ? null : new Armed(cPtr, false);
+  }
+
+  public Disarmed createDisarmed() {
+    long cPtr = isoObjectJNI.TestObject_createDisarmed(swigCPtr, this);
+    return (cPtr == 0) ? null : new Disarmed(cPtr, false);
+  }
+
+  public Running createRunning() {
+    long cPtr = isoObjectJNI.TestObject_createRunning(swigCPtr, this);
+    return (cPtr == 0) ? null : new Running(cPtr, false);
+  }
+
+  public PostRun createPostRun() {
+    long cPtr = isoObjectJNI.TestObject_createPostRun(swigCPtr, this);
+    return (cPtr == 0) ? null : new PostRun(cPtr, false);
+  }
+
+  public RemoteControlled createRemoteControlled() {
+    long cPtr = isoObjectJNI.TestObject_createRemoteControlled(swigCPtr, this);
+    return (cPtr == 0) ? null : new RemoteControlled(cPtr, false);
+  }
+
+  public Aborting createAborting() {
+    long cPtr = isoObjectJNI.TestObject_createAborting(swigCPtr, this);
+    return (cPtr == 0) ? null : new Aborting(cPtr, false);
+  }
+
+  public PreArming createPreArming() {
+    long cPtr = isoObjectJNI.TestObject_createPreArming(swigCPtr, this);
+    return (cPtr == 0) ? null : new PreArming(cPtr, false);
+  }
+
+  public PreRunning createPreRunning() {
+    long cPtr = isoObjectJNI.TestObject_createPreRunning(swigCPtr, this);
+    return (cPtr == 0) ? null : new PreRunning(cPtr, false);
+  }
+
+  public void setStateChangeSig(SWIGTYPE_p_sigslot__signalT_t value) {
+    isoObjectJNI.TestObject_stateChangeSig_set(swigCPtr, this, SWIGTYPE_p_sigslot__signalT_t.getCPtr(value));
+  }
+
+  public SWIGTYPE_p_sigslot__signalT_t getStateChangeSig() {
+    return new SWIGTYPE_p_sigslot__signalT_t(isoObjectJNI.TestObject_stateChangeSig_get(swigCPtr, this), true);
+  }
+
+  public void setOsemSig(SWIGTYPE_p_sigslot__signalT_ObjectSettingsType_R_t value) {
+    isoObjectJNI.TestObject_osemSig_set(swigCPtr, this, SWIGTYPE_p_sigslot__signalT_ObjectSettingsType_R_t.getCPtr(value));
+  }
+
+  public SWIGTYPE_p_sigslot__signalT_ObjectSettingsType_R_t getOsemSig() {
+    return new SWIGTYPE_p_sigslot__signalT_ObjectSettingsType_R_t(isoObjectJNI.TestObject_osemSig_get(swigCPtr, this), true);
+  }
+
+  public void setHeabSig(SWIGTYPE_p_sigslot__signalT_HeabMessageDataType_R_t value) {
+    isoObjectJNI.TestObject_heabSig_set(swigCPtr, this, SWIGTYPE_p_sigslot__signalT_HeabMessageDataType_R_t.getCPtr(value));
+  }
+
+  public SWIGTYPE_p_sigslot__signalT_HeabMessageDataType_R_t getHeabSig() {
+    return new SWIGTYPE_p_sigslot__signalT_HeabMessageDataType_R_t(isoObjectJNI.TestObject_heabSig_get(swigCPtr, this), true);
+  }
+
+  public void setTrajSig(SWIGTYPE_p_sigslot__signalT_t value) {
+    isoObjectJNI.TestObject_trajSig_set(swigCPtr, this, SWIGTYPE_p_sigslot__signalT_t.getCPtr(value));
+  }
+
+  public SWIGTYPE_p_sigslot__signalT_t getTrajSig() {
+    return new SWIGTYPE_p_sigslot__signalT_t(isoObjectJNI.TestObject_trajSig_get(swigCPtr, this), true);
+  }
+
+  public void setOstmSig(SWIGTYPE_p_sigslot__signalT_ObjectCommandType_R_t value) {
+    isoObjectJNI.TestObject_ostmSig_set(swigCPtr, this, SWIGTYPE_p_sigslot__signalT_ObjectCommandType_R_t.getCPtr(value));
+  }
+
+  public SWIGTYPE_p_sigslot__signalT_ObjectCommandType_R_t getOstmSig() {
+    return new SWIGTYPE_p_sigslot__signalT_ObjectCommandType_R_t(isoObjectJNI.TestObject_ostmSig_get(swigCPtr, this), true);
+  }
+
+  public void setStrtSig(SWIGTYPE_p_sigslot__signalT_StartMessageType_R_t value) {
+    isoObjectJNI.TestObject_strtSig_set(swigCPtr, this, SWIGTYPE_p_sigslot__signalT_StartMessageType_R_t.getCPtr(value));
+  }
+
+  public SWIGTYPE_p_sigslot__signalT_StartMessageType_R_t getStrtSig() {
+    return new SWIGTYPE_p_sigslot__signalT_StartMessageType_R_t(isoObjectJNI.TestObject_strtSig_get(swigCPtr, this), true);
+  }
+
+  public void onStateChange() {
+    isoObjectJNI.TestObject_onStateChange(swigCPtr, this);
+  }
+
+  public void onOSEM(ObjectSettingsType arg0) {
+    isoObjectJNI.TestObject_onOSEM(swigCPtr, this, ObjectSettingsType.getCPtr(arg0), arg0);
+  }
+
+  public void onHEAB(HeabMessageDataType arg0) {
+    isoObjectJNI.TestObject_onHEAB(swigCPtr, this, HeabMessageDataType.getCPtr(arg0), arg0);
+  }
+
+  public void onTRAJ() {
+    isoObjectJNI.TestObject_onTRAJ(swigCPtr, this);
+  }
+
+  public void onOSTM(SWIGTYPE_p_ObjectCommandType arg0) {
+    isoObjectJNI.TestObject_onOSTM(swigCPtr, this, SWIGTYPE_p_ObjectCommandType.getCPtr(arg0));
+  }
+
+  public void onSTRT(SWIGTYPE_p_StartMessageType arg0) {
+    isoObjectJNI.TestObject_onSTRT(swigCPtr, this, SWIGTYPE_p_StartMessageType.getCPtr(arg0));
+  }
+
+  public void setExpectedHeartbeatPeriod(SWIGTYPE_p_std__chrono__milliseconds value) {
+    isoObjectJNI.TestObject_expectedHeartbeatPeriod_set(swigCPtr, this, SWIGTYPE_p_std__chrono__milliseconds.getCPtr(value));
+  }
+
+  public SWIGTYPE_p_std__chrono__milliseconds getExpectedHeartbeatPeriod() {
+    return new SWIGTYPE_p_std__chrono__milliseconds(isoObjectJNI.TestObject_expectedHeartbeatPeriod_get(swigCPtr, this), true);
+  }
+
+  public void setMonrPeriod(SWIGTYPE_p_std__chrono__milliseconds value) {
+    isoObjectJNI.TestObject_monrPeriod_set(swigCPtr, this, SWIGTYPE_p_std__chrono__milliseconds.getCPtr(value));
+  }
+
+  public SWIGTYPE_p_std__chrono__milliseconds getMonrPeriod() {
+    return new SWIGTYPE_p_std__chrono__milliseconds(isoObjectJNI.TestObject_monrPeriod_get(swigCPtr, this), true);
+  }
+
+  public void setHeartbeatTimeout(SWIGTYPE_p_std__chrono__milliseconds value) {
+    isoObjectJNI.TestObject_heartbeatTimeout_set(swigCPtr, this, SWIGTYPE_p_std__chrono__milliseconds.getCPtr(value));
+  }
+
+  public SWIGTYPE_p_std__chrono__milliseconds getHeartbeatTimeout() {
+    return new SWIGTYPE_p_std__chrono__milliseconds(isoObjectJNI.TestObject_heartbeatTimeout_get(swigCPtr, this), true);
+  }
+
+  public void setMaxSafeNetworkDelay(SWIGTYPE_p_std__chrono__milliseconds value) {
+    isoObjectJNI.TestObject_maxSafeNetworkDelay_set(swigCPtr, this, SWIGTYPE_p_std__chrono__milliseconds.getCPtr(value));
+  }
+
+  public SWIGTYPE_p_std__chrono__milliseconds getMaxSafeNetworkDelay() {
+    return new SWIGTYPE_p_std__chrono__milliseconds(isoObjectJNI.TestObject_maxSafeNetworkDelay_get(swigCPtr, this), true);
   }
 
 }

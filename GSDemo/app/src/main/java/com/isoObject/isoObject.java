@@ -198,11 +198,13 @@ public class isoObject implements isoObjectConstants {
   }
 
   public static SWIGTYPE_p_std__mapT_ISO22133__Events__EventType_std__string_t getDescriptions() {
-    return new SWIGTYPE_p_std__mapT_ISO22133__Events__EventType_std__string_t(isoObjectJNI.descriptions_get(), true);
+    long cPtr = isoObjectJNI.descriptions_get();
+    return (cPtr == 0) ? null : new SWIGTYPE_p_std__mapT_ISO22133__Events__EventType_std__string_t(cPtr, false);
   }
 
   public static SWIGTYPE_p_std__mapT_ISO22133__ObjectStateID_std__string_t getStateNames() {
-    return new SWIGTYPE_p_std__mapT_ISO22133__ObjectStateID_std__string_t(isoObjectJNI.stateNames_get(), true);
+    long cPtr = isoObjectJNI.stateNames_get();
+    return (cPtr == 0) ? null : new SWIGTYPE_p_std__mapT_ISO22133__ObjectStateID_std__string_t(cPtr, false);
   }
 
   public static boolean LessThan(Transition lhs, Transition rhs) {

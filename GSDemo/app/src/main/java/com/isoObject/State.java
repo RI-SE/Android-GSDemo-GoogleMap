@@ -40,8 +40,8 @@ public class State {
     return ObjectStateID.swigToEnum(isoObjectJNI.State_getStateID(swigCPtr, this));
   }
 
-  public SWIGTYPE_p_std__string getName() {
-    return new SWIGTYPE_p_std__string(isoObjectJNI.State_getName(swigCPtr, this), true);
+  public String getName() {
+    return isoObjectJNI.State_getName(swigCPtr, this);
   }
 
   public void handleEvent(TestObject arg0, EventType arg1) {

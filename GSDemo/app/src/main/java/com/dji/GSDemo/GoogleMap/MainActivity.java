@@ -7,7 +7,8 @@ import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.isoObject.*;
+import com.isoObject.TestObject;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,11 +35,10 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(context, activity);
         context.startActivity(intent);
 
-        //Här Sepast
-        timeval timevalExample = new timeval();
-        isoObject.encodeSTRTMessage(timevalExample, "data", 123, '1');
+        isoDrone droneObject = new isoDrone(0, false);
+        droneObject.setName("isoDrone");
+        droneObject.handleAbort();
 
-        TestObject droneObject = new TestObject(123, true);
-        droneObject.getSpeed();
+
     }
 }
