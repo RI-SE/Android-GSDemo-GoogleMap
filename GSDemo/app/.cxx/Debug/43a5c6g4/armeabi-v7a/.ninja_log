@@ -1,0 +1,26 @@
+# ninja log v5
+11	146	1672833340033137088	iso22133/CMakeFiles/ISO22133.dir/src/footer.c.o	5bfd42476e3f6c6b
+2	222	1672833340105138006	iso22133/CMakeFiles/ISO22133.dir/positioning.c.o	4d919beb3385878
+20	279	1672833340165138773	iso22133/CMakeFiles/ISO22133.dir/src/header.c.o	aef3186d014dfb0
+28	300	1672833340161138721	iso22133/CMakeFiles/ISO22133.dir/src/iohelpers.c.o	1e14b60682128a69
+146	359	1672833340229139590	iso22133/CMakeFiles/ISO22133.dir/src/osem.c.o	f1764237d0349f51
+223	388	1672833340277140202	iso22133/CMakeFiles/ISO22133.dir/src/ostm.c.o	4f0d6d87c8a9b8ec
+279	413	1672833340297140456	iso22133/CMakeFiles/ISO22133.dir/src/timeconversions.c.o	579fc4abc29ac20c
+57	419	1672833340305140558	iso22133/CMakeFiles/ISO22133.dir/src/monr.c.o	f157e96db66f4096
+301	604	1672833340481142805	iso22133/CMakeFiles/ISO22133.dir/src/traj.c.o	53e6a64fa9bf0466
+4	853	1672833340737146072	iso22133/CMakeFiles/ISO22133.dir/iso22133.c.o	5c10c691db604193
+854	951	1672833340837147348	/home/jesper/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/build/intermediates/cxx/Debug/43a5c6g4/obj/armeabi-v7a/libISO22133.so	611e706abc7ab601
+1	1721	1672833341597157047	CMakeFiles/ISO_object.dir/src/trajDecoder.cpp.o	fe80a5fc92b3a6a7
+1	4678	1672833344541194613	CMakeFiles/ISO_objectTest.dir/demoIsoObject.cpp.o	47481003b6df9e6b
+1	5319	1672833345189202883	CMakeFiles/ISO_object.dir/src/iso22133state.cpp.o	3a509b1eaa06d124
+0	7549	1672833347393231005	CMakeFiles/ISO_object.dir/src/iso22133object.cpp.o	f62ab4154db6558b
+7549	7785	1672833347657234374	/home/jesper/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/build/intermediates/cxx/Debug/43a5c6g4/obj/armeabi-v7a/libISO_object.so	28ee2b92a012f0ef
+7785	7842	1672833347721235191	/home/jesper/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/build/intermediates/cxx/Debug/43a5c6g4/obj/armeabi-v7a/ISO_objectTest	4b53be4d999b54eb
+7786	8684	1672833348569246010	CMakeFiles/isoObject_wrap.dir/isoObjectJAVA_wrap.cxx	66b14f2dd2252aae
+7786	8684	1672833348569246010	isoObject_wrap.java	66b14f2dd2252aae
+7786	8684	1672833348569246010	isoObject_wrapJNI.java	66b14f2dd2252aae
+7786	8684	1672833348569246010	/home/jesper/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/.cxx/Debug/43a5c6g4/armeabi-v7a/CMakeFiles/isoObject_wrap.dir/isoObjectJAVA_wrap.cxx	66b14f2dd2252aae
+7786	8684	1672833348569246010	/home/jesper/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/.cxx/Debug/43a5c6g4/armeabi-v7a/isoObject_wrap.java	66b14f2dd2252aae
+7786	8684	1672833348569246010	/home/jesper/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/.cxx/Debug/43a5c6g4/armeabi-v7a/isoObject_wrapJNI.java	66b14f2dd2252aae
+8684	13319	1672833353169304701	CMakeFiles/isoObject_wrap.dir/CMakeFiles/isoObject_wrap.dir/isoObjectJAVA_wrap.cxx.o	760a75d89577e84c
+13319	13415	1672833353281306129	/home/jesper/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/build/intermediates/cxx/Debug/43a5c6g4/obj/armeabi-v7a/libisoObject_wrap.so	e178800b761cdbc7

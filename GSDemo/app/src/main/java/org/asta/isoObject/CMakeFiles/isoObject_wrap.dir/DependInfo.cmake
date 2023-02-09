@@ -1,26 +1,14 @@
+
+# Consider dependencies only in project.
+set(CMAKE_DEPENDS_IN_PROJECT_ONLY OFF)
+
 # The set of languages for which implicit dependencies are needed:
 set(CMAKE_DEPENDS_LANGUAGES
-  "CXX"
-  )
-# The set of files for implicit dependencies of each language:
-set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/isoObject_wrap.dir/isoObjectJAVA_wrap.cxx" "/home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/isoObject_wrap.dir/CMakeFiles/isoObject_wrap.dir/isoObjectJAVA_wrap.cxx.o"
-  )
-set(CMAKE_CXX_COMPILER_ID "GNU")
-
-# Preprocessor definitions for this target.
-set(CMAKE_TARGET_DEFINITIONS_CXX
-  "isoObject_wrap_EXPORTS"
   )
 
-# The include file search paths:
-set(CMAKE_CXX_TARGET_INCLUDE_PATH
-  "../inc"
-  "../sigslot/include/sigslot"
-  "/home/jesper/Documents/gitz/util/C/iso22133"
-  "/usr/lib/jvm/default-java/include"
-  "/usr/lib/jvm/default-java/include/linux"
-  "/home/jesper/Documents/gitz/util/C/iso22133/include"
+# The set of dependency files which are needed:
+set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "/home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/isoObject_wrap.dir/isoObjectJAVA_wrap.cxx" "CMakeFiles/isoObject_wrap.dir/CMakeFiles/isoObject_wrap.dir/isoObjectJAVA_wrap.cxx.o" "gcc" "CMakeFiles/isoObject_wrap.dir/CMakeFiles/isoObject_wrap.dir/isoObjectJAVA_wrap.cxx.o.d"
   )
 
 # Targets to which this target links.

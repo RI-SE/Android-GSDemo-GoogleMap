@@ -21,9 +21,6 @@ public class MApplication extends Application {
         {
             Log.wtf("Error", e);
         }
-
-
-
     }
 
 
@@ -60,24 +57,35 @@ public class MApplication extends Application {
 class Task implements Runnable {
     @Override
     public void run() {
-        IsoDrone drone = new IsoDrone("192.168.166.127");
+        int sleep = 100;
+
+        IsoDrone drone = new IsoDrone("192.168.174.198");
         double test = 0.01;
         String lastDroneState = "";
 
          while(true) {
             try {
-               Thread.sleep(100);
+               Thread.sleep(300);
                Log.wtf("Name", drone.getName());
                Log.wtf("State", drone.getCurrentStateName());
                Log.wtf("IPv4", Utils.getIPAddress(true)); // IPv4
+                CartesianPosition dronePos = new CartesianPosition();
+                dronePos.setXCoord_m(test);
+                dronePos.setYCoord_m(20);
+                dronePos.setZCoord_m(30);
+                dronePos.setHeading_rad(0);
+                test += 0.1;
+                dronePos.setIsPositionValid(true);
+                dronePos.setIsHeadingValid(true);
 
+                drone.setPosition(dronePos);
                 //Log.wtf("Lat: ", String.valueOf(drone.getOrigin().getLatitude_deg()));
                 //Log.wtf("Log: ", String.valueOf(drone.getOrigin().getLongitude_deg()));
                 //Log.wtf("alt: ", String.valueOf(drone.getOrigin().getAltitude_m()));
 
                 if (drone.getCurrentStateName().equals("Armed") || (drone.getCurrentStateName().equals("Running"))) {
 
-                    CartesianPosition dronePos = new CartesianPosition();
+                    //CartesianPosition dronePos = new CartesianPosition();
                     dronePos.setXCoord_m(test);
                     dronePos.setYCoord_m(20);
                     dronePos.setZCoord_m(30);
@@ -117,7 +125,7 @@ class Task implements Runnable {
                     do{
                         drone.reducePoints(epsilon);
                         epsilon += 0.001;
-                    }while (drone.getReducedTraj().size() > 99 && epsilon < 0.06);
+                    }while (drone.getReducedTraj().size() > 6 && epsilon < 0.06);
                     Log.wtf("newTraj", String.valueOf(drone.getReducedTraj().size()));
 
 
@@ -126,6 +134,8 @@ class Task implements Runnable {
 
                     Log.wtf("Error", "Disarmed");
                     lastDroneState = "Disarmed";
+                    sleep = 10;
+
                 } else if (drone.getCurrentStateName().equals("PreRunning") && lastDroneState != "PreRunning") {
                     Log.wtf("Error", "PreRunning");
                     lastDroneState = "PreRunning";

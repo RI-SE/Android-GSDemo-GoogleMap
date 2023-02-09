@@ -14,16 +14,16 @@
 # EXTERNAL cache entries
 ########################
 
-//Builds the googlemock subproject
-BUILD_GMOCK:BOOL=ON
+//Building for Android
+BUILDING_FOR_ANDROID:BOOL=OFF
 
 //The directory containing a CMake configuration file for Boost.
-Boost_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Boost-1.71.0
+Boost_DIR:PATH=/usr/local/lib/cmake/Boost-1.78.0
 
 //Path to a file.
-Boost_INCLUDE_DIR:PATH=/usr/include/boost
+Boost_INCLUDE_DIR:PATH=/usr/local/include
 
-Boost_SYSTEM_LIBRARY_RELEASE:STRING=/usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0
+Boost_SYSTEM_LIBRARY_RELEASE:STRING=/usr/local/lib/libboost_system.so.1.78.0
 
 //Path to a program.
 CMAKE_ADDR2LINE:FILEPATH=/usr/bin/addr2line
@@ -90,7 +90,7 @@ CMAKE_C_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
 //Flags used by the C compiler during RELWITHDEBINFO builds.
 CMAKE_C_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
 
-//Path to a program.usr
+//Path to a program.
 CMAKE_DLLTOOL:FILEPATH=CMAKE_DLLTOOL-NOTFOUND
 
 //Flags used by the linker during all build types.
@@ -109,7 +109,10 @@ CMAKE_EXE_LINKER_FLAGS_RELEASE:STRING=
 CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO:STRING=
 
 //Enable/Disable output of compile commands during generation.
-CMAKE_EXPORT_COMPILE_COMMANDS:BOOL=OFF
+CMAKE_EXPORT_COMPILE_COMMANDS:BOOL=
+
+//Value Computed by CMake.
+CMAKE_FIND_PACKAGE_REDIRECTS_DIR:STATIC=/home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/pkgRedirects
 
 //User executables (bin)
 CMAKE_INSTALL_BINDIR:PATH=bin
@@ -206,21 +209,6 @@ CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 //Value Computed by CMake
 CMAKE_PROJECT_NAME:STATIC=ISO_object
 
-//Value Computed by CMake
-CMAKE_PROJECT_VERSION:STATIC=1.12.1
-
-//Value Computed by CMake
-CMAKE_PROJECT_VERSION_MAJOR:STATIC=1
-
-//Value Computed by CMake
-CMAKE_PROJECT_VERSION_MINOR:STATIC=12
-
-//Value Computed by CMake
-CMAKE_PROJECT_VERSION_PATCH:STATIC=1
-
-//Value Computed by CMake
-CMAKE_PROJECT_VERSION_TWEAK:STATIC=
-
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/usr/bin/ranlib
 
@@ -293,29 +281,14 @@ FETCHCONTENT_FULLY_DISCONNECTED:BOOL=OFF
 //Enables QUIET option for all content population
 FETCHCONTENT_QUIET:BOOL=ON
 
-//When not empty, overrides where to find pre-populated content
-// for googletest
-FETCHCONTENT_SOURCE_DIR_GOOGLETEST:PATH=
-
 //Enables UPDATE_DISCONNECTED behavior for all content population
 FETCHCONTENT_UPDATES_DISCONNECTED:BOOL=OFF
-
-//Enables UPDATE_DISCONNECTED behavior just for population of googletest
-FETCHCONTENT_UPDATES_DISCONNECTED_GOOGLETEST:BOOL=OFF
-
-//Use Abseil and RE2. Requires Abseil and RE2 to be separately
-// added to the build.
-GTEST_HAS_ABSL:BOOL=OFF
-
-//Enable installation of googletest. (Projects embedding googletest
-// may want to turn this OFF.)
-INSTALL_GTEST:BOOL=ON
 
 //Value Computed by CMake
 ISO22133_BINARY_DIR:STATIC=/home/jesper/Documents/gitz/util/C/isoObject/build/iso22133
 
-//Path to a file.
-ISO22133_HEADER_DIR:PATH=/home/jesper/Documents/gitz/util/C/iso22133
+//Value Computed by CMake
+ISO22133_IS_TOP_LEVEL:STATIC=OFF
 
 //Dependencies for the target
 ISO22133_LIB_DEPENDS:STATIC=general;m;
@@ -326,25 +299,28 @@ ISO22133_SOURCE_DIR:STATIC=/home/jesper/Documents/gitz/util/C/iso22133
 //Value Computed by CMake
 ISO_object_BINARY_DIR:STATIC=/home/jesper/Documents/gitz/util/C/isoObject/build
 
+//Value Computed by CMake
+ISO_object_IS_TOP_LEVEL:STATIC=ON
+
 //Dependencies for the target
-ISO_object_LIB_DEPENDS:STATIC=general;ISO22133;general;atomic;general;pthread;
+ISO_object_LIB_DEPENDS:STATIC=general;ISO22133;general;atomic;
 
 //Value Computed by CMake
 ISO_object_SOURCE_DIR:STATIC=/home/jesper/Documents/gitz/util/C/isoObject
 
-//Path to a file.
+//Java AWT Native Interface include directory
 JAVA_AWT_INCLUDE_PATH:PATH=/usr/lib/jvm/default-java/include
 
-//Path to a library.
+//Java AWT Native Interface library
 JAVA_AWT_LIBRARY:FILEPATH=/usr/lib/jvm/default-java/lib/libjawt.so
 
-//Path to a file.
+//JNI include directory
 JAVA_INCLUDE_PATH:PATH=/usr/lib/jvm/default-java/include
 
-//Path to a file.
+//jni_md.h jniport.h include directory
 JAVA_INCLUDE_PATH2:PATH=/usr/lib/jvm/default-java/include/linux
 
-//Path to a library.
+//Java Virtual Machine library
 JAVA_JVM_LIBRARY:FILEPATH=/usr/lib/jvm/default-java/lib/server/libjvm.so
 
 //Path to a file.
@@ -365,60 +341,14 @@ SWIG_WITH_PYTHON:BOOL=OFF
 //Enable swigging
 WITH_SWIG:BOOL=ON
 
-//Path to a program.
-_Python_EXECUTABLE:FILEPATH=/usr/bin/python3.8
-
 //The directory containing a CMake configuration file for boost_headers.
-boost_headers_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/boost_headers-1.71.0
+boost_headers_DIR:PATH=/usr/local/lib/cmake/boost_headers-1.78.0
 
 //The directory containing a CMake configuration file for boost_system.
-boost_system_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/boost_system-1.71.0
-
-//Value Computed by CMake
-gmock_BINARY_DIR:STATIC=/home/jesper/Documents/gitz/util/C/isoObject/build/_deps/googletest-build/googlemock
+boost_system_DIR:PATH=/usr/local/lib/cmake/boost_system-1.78.0
 
 //Dependencies for the target
-gmock_LIB_DEPENDS:STATIC=general;gtest;
-
-//Value Computed by CMake
-gmock_SOURCE_DIR:STATIC=/home/jesper/Documents/gitz/util/C/isoObject/build/_deps/googletest-src/googlemock
-
-//Build all of Google Mock's own tests.
-gmock_build_tests:BOOL=OFF
-
-//Dependencies for the target
-gmock_main_LIB_DEPENDS:STATIC=general;gmock;
-
-//Value Computed by CMake
-googletest-distribution_BINARY_DIR:STATIC=/home/jesper/Documents/gitz/util/C/isoObject/build/_deps/googletest-build
-
-//Value Computed by CMake
-googletest-distribution_SOURCE_DIR:STATIC=/home/jesper/Documents/gitz/util/C/isoObject/build/_deps/googletest-src
-
-//Value Computed by CMake
-gtest_BINARY_DIR:STATIC=/home/jesper/Documents/gitz/util/C/isoObject/build/_deps/googletest-build/googletest
-
-//Value Computed by CMake
-gtest_SOURCE_DIR:STATIC=/home/jesper/Documents/gitz/util/C/isoObject/build/_deps/googletest-src/googletest
-
-//Build gtest's sample programs.
-gtest_build_samples:BOOL=OFF
-
-//Build all of gtest's own tests.
-gtest_build_tests:BOOL=OFF
-
-//Disable uses of pthreads in gtest.
-gtest_disable_pthreads:BOOL=OFF
-
-//Use shared (DLL) run-time lib even when Google Test is built
-// as static lib.
-gtest_force_shared_crt:BOOL=OFF
-
-//Build gtest with internal symbols hidden in shared libraries.
-gtest_hide_internal_symbols:BOOL=OFF
-
-//Dependencies for the target
-gtest_main_LIB_DEPENDS:STATIC=general;gtest;
+isoObject_wrap_LIB_DEPENDS:STATIC=general;ISO_object;general;ISO22133;general;atomic;general;/usr/lib/jvm/default-java/lib/libjawt.so;general;/usr/lib/jvm/default-java/lib/server/libjvm.so;
 
 
 ########################
@@ -436,9 +366,9 @@ CMAKE_CACHEFILE_DIR:INTERNAL=/home/jesper/Documents/gitz/util/C/isoObject/build
 //Major version of cmake used to create the current loaded cache
 CMAKE_CACHE_MAJOR_VERSION:INTERNAL=3
 //Minor version of cmake used to create the current loaded cache
-CMAKE_CACHE_MINOR_VERSION:INTERNAL=16
+CMAKE_CACHE_MINOR_VERSION:INTERNAL=25
 //Patch version of cmake used to create the current loaded cache
-CMAKE_CACHE_PATCH_VERSION:INTERNAL=3
+CMAKE_CACHE_PATCH_VERSION:INTERNAL=1
 //ADVANCED property for variable: CMAKE_COLOR_MAKEFILE
 CMAKE_COLOR_MAKEFILE-ADVANCED:INTERNAL=1
 //Path to CMake executable.
@@ -505,14 +435,6 @@ CMAKE_GENERATOR_INSTANCE:INTERNAL=
 CMAKE_GENERATOR_PLATFORM:INTERNAL=
 //Name of generator toolset.
 CMAKE_GENERATOR_TOOLSET:INTERNAL=
-//Test CMAKE_HAVE_LIBC_PTHREAD
-CMAKE_HAVE_LIBC_PTHREAD:INTERNAL=
-//Have library pthreads
-CMAKE_HAVE_PTHREADS_CREATE:INTERNAL=
-//Have library pthread
-CMAKE_HAVE_PTHREAD_CREATE:INTERNAL=1
-//Have include pthread.h
-CMAKE_HAVE_PTHREAD_H:INTERNAL=1
 //Source directory with the top level CMakeLists.txt file for this
 // project
 CMAKE_HOME_DIRECTORY:INTERNAL=/home/jesper/Documents/gitz/util/C/isoObject
@@ -567,7 +489,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=5
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=2
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP
@@ -579,7 +501,7 @@ CMAKE_RANLIB-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_READELF
 CMAKE_READELF-ADVANCED:INTERNAL=1
 //Path to CMake installation.
-CMAKE_ROOT:INTERNAL=/usr/share/cmake-3.16
+CMAKE_ROOT:INTERNAL=/usr/share/cmake-3.25
 //ADVANCED property for variable: CMAKE_SHARED_LINKER_FLAGS
 CMAKE_SHARED_LINKER_FLAGS-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_SHARED_LINKER_FLAGS_DEBUG
@@ -611,15 +533,11 @@ CMAKE_UNAME:INTERNAL=/bin/uname
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
 //Details about finding Boost
-FIND_PACKAGE_MESSAGE_DETAILS_Boost:INTERNAL=[/usr/lib/x86_64-linux-gnu/cmake/Boost-1.71.0/BoostConfig.cmake][cfound components: system ][v1.71.0()]
+FIND_PACKAGE_MESSAGE_DETAILS_Boost:INTERNAL=[/usr/local/lib/cmake/Boost-1.78.0/BoostConfig.cmake][cfound components: system ][v1.78.0(1.78.0)]
 //Details about finding JNI
-FIND_PACKAGE_MESSAGE_DETAILS_JNI:INTERNAL=[/usr/lib/jvm/default-java/lib/libjawt.so][/usr/lib/jvm/default-java/lib/server/libjvm.so][/usr/lib/jvm/default-java/include][/usr/lib/jvm/default-java/include/linux][/usr/lib/jvm/default-java/include][v()]
-//Details about finding Python
-FIND_PACKAGE_MESSAGE_DETAILS_Python:INTERNAL=[/usr/bin/python3.8][cfound components: Interpreter ][v3.8.10()]
+FIND_PACKAGE_MESSAGE_DETAILS_JNI:INTERNAL=[/usr/lib/jvm/default-java/include][/usr/lib/jvm/default-java/include/linux][cfound components: AWT JVM ][v()]
 //Details about finding SWIG
-FIND_PACKAGE_MESSAGE_DETAILS_SWIG:INTERNAL=[/usr/bin/swig4.0][/usr/share/swig4.0][v4.0.1()]
-//Details about finding Threads
-FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
+FIND_PACKAGE_MESSAGE_DETAILS_SWIG:INTERNAL=[/usr/bin/swig4.0][/usr/share/swig4.0][c ][v4.0.1()]
 //ADVANCED property for variable: JAVA_AWT_INCLUDE_PATH
 JAVA_AWT_INCLUDE_PATH-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: JAVA_AWT_LIBRARY
@@ -630,36 +548,20 @@ JAVA_INCLUDE_PATH-ADVANCED:INTERNAL=1
 JAVA_INCLUDE_PATH2-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: JAVA_JVM_LIBRARY
 JAVA_JVM_LIBRARY-ADVANCED:INTERNAL=1
+//Test JNI_INCLUDE_PATH2_OPTIONAL
+JNI_INCLUDE_PATH2_OPTIONAL:INTERNAL=
 //ADVANCED property for variable: SWIG_DIR
 SWIG_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: SWIG_EXECUTABLE
 SWIG_EXECUTABLE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: SWIG_VERSION
 SWIG_VERSION-ADVANCED:INTERNAL=1
+//linker supports push/pop state
+_CMAKE_LINKER_PUSHPOP_STATE_SUPPORTED:INTERNAL=TRUE
 //CMAKE_INSTALL_PREFIX during last run
 _GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX:INTERNAL=/usr/local
-//ADVANCED property for variable: _Python_EXECUTABLE
-_Python_EXECUTABLE-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: _Python_INTERPRETER_SIGNATURE
-_Python_INTERPRETER_SIGNATURE-ADVANCED:INTERNAL=1
-_Python_INTERPRETER_SIGNATURE:INTERNAL=60fbcba4d3ec42cb22d9b25de2c7c03a
 //ADVANCED property for variable: boost_headers_DIR
 boost_headers_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: boost_system_DIR
 boost_system_DIR-ADVANCED:INTERNAL=1
-cmake_package_name:INTERNAL=GTest
-generated_dir:INTERNAL=/home/jesper/Documents/gitz/util/C/isoObject/build/_deps/googletest-build/googletest/generated
-//ADVANCED property for variable: gmock_build_tests
-gmock_build_tests-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: gtest_build_samples
-gtest_build_samples-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: gtest_build_tests
-gtest_build_tests-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: gtest_disable_pthreads
-gtest_disable_pthreads-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: gtest_force_shared_crt
-gtest_force_shared_crt-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: gtest_hide_internal_symbols
-gtest_hide_internal_symbols-ADVANCED:INTERNAL=1
-targets_export_name:INTERNAL=GTestTargets
 

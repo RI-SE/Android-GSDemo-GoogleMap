@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/isoObject_wrap.dir/CMakeFiles/isoObject_wrap.dir/isoObjectJAVA_wrap.cxx.o"
+  "CMakeFiles/isoObject_wrap.dir/CMakeFiles/isoObject_wrap.dir/isoObjectJAVA_wrap.cxx.o.d"
   "libisoObject_wrap.pdb"
   "libisoObject_wrap.so"
 )

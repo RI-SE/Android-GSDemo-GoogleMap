@@ -1,27 +1,28 @@
 Performing C SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD failed with the following output:
-Change Dir: /home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeTmp
+Change Dir: /home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeScratch/TryCompile-OwXAc4
 
-Run Build Command(s):/usr/bin/make cmTC_60b79/fast && /usr/bin/make -f CMakeFiles/cmTC_60b79.dir/build.make CMakeFiles/cmTC_60b79.dir/build
-make[1]: Entering directory '/home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_60b79.dir/src.c.o
-/usr/bin/cc   -DCMAKE_HAVE_LIBC_PTHREAD   -o CMakeFiles/cmTC_60b79.dir/src.c.o   -c /home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeTmp/src.c
-Linking C executable cmTC_60b79
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_60b79.dir/link.txt --verbose=1
-/usr/bin/cc  -DCMAKE_HAVE_LIBC_PTHREAD    CMakeFiles/cmTC_60b79.dir/src.c.o  -o cmTC_60b79 
-/usr/bin/ld: CMakeFiles/cmTC_60b79.dir/src.c.o: in function `main':
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_52679/fast && /usr/bin/make  -f CMakeFiles/cmTC_52679.dir/build.make CMakeFiles/cmTC_52679.dir/build
+make[1]: Entering directory '/home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeScratch/TryCompile-OwXAc4'
+Building C object CMakeFiles/cmTC_52679.dir/src.c.o
+/usr/bin/cc -DCMAKE_HAVE_LIBC_PTHREAD   -o CMakeFiles/cmTC_52679.dir/src.c.o -c /home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeScratch/TryCompile-OwXAc4/src.c
+Linking C executable cmTC_52679
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_52679.dir/link.txt --verbose=1
+/usr/bin/cc CMakeFiles/cmTC_52679.dir/src.c.o -o cmTC_52679 
+/usr/bin/ld: CMakeFiles/cmTC_52679.dir/src.c.o: in function `main':
 src.c:(.text+0x46): undefined reference to `pthread_create'
 /usr/bin/ld: src.c:(.text+0x52): undefined reference to `pthread_detach'
-/usr/bin/ld: src.c:(.text+0x63): undefined reference to `pthread_join'
+/usr/bin/ld: src.c:(.text+0x5e): undefined reference to `pthread_cancel'
+/usr/bin/ld: src.c:(.text+0x6f): undefined reference to `pthread_join'
 collect2: error: ld returned 1 exit status
-make[1]: *** [CMakeFiles/cmTC_60b79.dir/build.make:87: cmTC_60b79] Error 1
-make[1]: Leaving directory '/home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeTmp'
-make: *** [Makefile:121: cmTC_60b79/fast] Error 2
+make[1]: *** [CMakeFiles/cmTC_52679.dir/build.make:99: cmTC_52679] Error 1
+make[1]: Leaving directory '/home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeScratch/TryCompile-OwXAc4'
+make: *** [Makefile:127: cmTC_52679/fast] Error 2
 
 
 Source file was:
 #include <pthread.h>
 
-void* test_func(void* data)
+static void* test_func(void* data)
 {
   return data;
 }
@@ -31,6 +32,7 @@ int main(void)
   pthread_t thread;
   pthread_create(&thread, NULL, test_func, NULL);
   pthread_detach(thread);
+  pthread_cancel(thread);
   pthread_join(thread, NULL);
   pthread_atfork(NULL, NULL, NULL);
   pthread_exit(NULL);
@@ -38,21 +40,45 @@ int main(void)
   return 0;
 }
 
-Determining if the function pthread_create exists in the pthreads failed with the following output:
-Change Dir: /home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/make cmTC_24e70/fast && /usr/bin/make -f CMakeFiles/cmTC_24e70.dir/build.make CMakeFiles/cmTC_24e70.dir/build
-make[1]: Entering directory '/home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_24e70.dir/CheckFunctionExists.c.o
-/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_24e70.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.16/Modules/CheckFunctionExists.c
-Linking C executable cmTC_24e70
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_24e70.dir/link.txt --verbose=1
-/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTC_24e70.dir/CheckFunctionExists.c.o  -o cmTC_24e70  -lpthreads 
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeScratch/TryCompile-m4F8m5
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_b37c8/fast && /usr/bin/make  -f CMakeFiles/cmTC_b37c8.dir/build.make CMakeFiles/cmTC_b37c8.dir/build
+make[1]: Entering directory '/home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeScratch/TryCompile-m4F8m5'
+Building C object CMakeFiles/cmTC_b37c8.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create -o CMakeFiles/cmTC_b37c8.dir/CheckFunctionExists.c.o -c /home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeScratch/TryCompile-m4F8m5/CheckFunctionExists.c
+Linking C executable cmTC_b37c8
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b37c8.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=pthread_create CMakeFiles/cmTC_b37c8.dir/CheckFunctionExists.c.o -o cmTC_b37c8  -lpthreads 
 /usr/bin/ld: cannot find -lpthreads
 collect2: error: ld returned 1 exit status
-make[1]: *** [CMakeFiles/cmTC_24e70.dir/build.make:87: cmTC_24e70] Error 1
-make[1]: Leaving directory '/home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeTmp'
-make: *** [Makefile:121: cmTC_24e70/fast] Error 2
+make[1]: *** [CMakeFiles/cmTC_b37c8.dir/build.make:99: cmTC_b37c8] Error 1
+make[1]: Leaving directory '/home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeScratch/TryCompile-m4F8m5'
+make: *** [Makefile:127: cmTC_b37c8/fast] Error 2
 
+
+
+Performing C SOURCE FILE Test JNI_INCLUDE_PATH2_OPTIONAL failed with the following output:
+Change Dir: /home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeScratch/TryCompile-dZVGZ3
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_8c12b/fast && /usr/bin/make  -f CMakeFiles/cmTC_8c12b.dir/build.make CMakeFiles/cmTC_8c12b.dir/build
+make[1]: Entering directory '/home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeScratch/TryCompile-dZVGZ3'
+Building C object CMakeFiles/cmTC_8c12b.dir/src.c.o
+/usr/bin/cc -DJNI_INCLUDE_PATH2_OPTIONAL -I/usr/lib/jvm/default-java/include  -o CMakeFiles/cmTC_8c12b.dir/src.c.o -c /home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeScratch/TryCompile-dZVGZ3/src.c
+In file included from /home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeScratch/TryCompile-dZVGZ3/src.c:2:
+/usr/lib/jvm/default-java/include/jni.h:45:10: fatal error: jni_md.h: No such file or directory
+   45 | #include "jni_md.h"
+      |          ^~~~~~~~~~
+compilation terminated.
+make[1]: *** [CMakeFiles/cmTC_8c12b.dir/build.make:78: CMakeFiles/cmTC_8c12b.dir/src.c.o] Error 1
+make[1]: Leaving directory '/home/jesper/Documents/gitz/util/C/isoObject/build/CMakeFiles/CMakeScratch/TryCompile-dZVGZ3'
+make: *** [Makefile:127: cmTC_8c12b/fast] Error 2
+
+
+Source file was:
+
+#include <jni.h>
+int main(void) { return 0; }
 
 

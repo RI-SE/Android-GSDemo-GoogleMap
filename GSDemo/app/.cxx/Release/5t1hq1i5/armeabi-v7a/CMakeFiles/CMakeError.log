@@ -1,0 +1,66 @@
+Performing C SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD failed with the following output:
+Change Dir: /home/jesper/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/.cxx/Release/5t1hq1i5/armeabi-v7a/CMakeFiles/CMakeScratch/TryCompile-ggY7OU
+
+Run Build Command(s):/usr/bin/ninja cmTC_3eb32 && [1/2] Building C object CMakeFiles/cmTC_3eb32.dir/src.c.o
+/home/jesper/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/.cxx/Release/5t1hq1i5/armeabi-v7a/CMakeFiles/CMakeScratch/TryCompile-ggY7OU/src.c:13:3: warning: implicit declaration of function 'pthread_cancel' is invalid in C99 [-Wimplicit-function-declaration]
+  pthread_cancel(thread);
+  ^
+1 warning generated.
+[2/2] Linking C executable cmTC_3eb32
+FAILED: cmTC_3eb32 
+: && /home/jesper/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=armv7-none-linux-androideabi19 --sysroot=/home/jesper/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security -fexceptions  -O2 -g -DNDEBUG -static CMakeFiles/cmTC_3eb32.dir/src.c.o -o cmTC_3eb32  -latomic -lm && :
+ld: error: undefined symbol: pthread_cancel
+>>> referenced by src.c:13
+>>>               CMakeFiles/cmTC_3eb32.dir/src.c.o:(main)
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+#include <pthread.h>
+
+static void* test_func(void* data)
+{
+  return data;
+}
+
+int main(void)
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, test_func, NULL);
+  pthread_detach(thread);
+  pthread_cancel(thread);
+  pthread_join(thread, NULL);
+  pthread_atfork(NULL, NULL, NULL);
+  pthread_exit(NULL);
+
+  return 0;
+}
+
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/jesper/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/.cxx/Release/5t1hq1i5/armeabi-v7a/CMakeFiles/CMakeScratch/TryCompile-uH23cU
+
+Run Build Command(s):/usr/bin/ninja cmTC_69052 && [1/2] Building C object CMakeFiles/cmTC_69052.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_69052
+FAILED: cmTC_69052 
+: && /home/jesper/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=armv7-none-linux-androideabi19 --sysroot=/home/jesper/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security -fexceptions -DCHECK_FUNCTION_EXISTS=pthread_create -O2 -g -DNDEBUG -static CMakeFiles/cmTC_69052.dir/CheckFunctionExists.c.o -o cmTC_69052  -lpthreads   -latomic -lm && :
+ld: error: unable to find library -lpthreads
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the function pthread_create exists in the pthread failed with the following output:
+Change Dir: /home/jesper/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/.cxx/Release/5t1hq1i5/armeabi-v7a/CMakeFiles/CMakeScratch/TryCompile-t4NEUT
+
+Run Build Command(s):/usr/bin/ninja cmTC_42ad1 && [1/2] Building C object CMakeFiles/cmTC_42ad1.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_42ad1
+FAILED: cmTC_42ad1 
+: && /home/jesper/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=armv7-none-linux-androideabi19 --sysroot=/home/jesper/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security -fexceptions -DCHECK_FUNCTION_EXISTS=pthread_create -O2 -g -DNDEBUG -static CMakeFiles/cmTC_42ad1.dir/CheckFunctionExists.c.o -o cmTC_42ad1  -lpthread   -latomic -lm && :
+ld: error: unable to find library -lpthread
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
+
+
+

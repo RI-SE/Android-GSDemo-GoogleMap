@@ -1,0 +1,16 @@
+# ninja log v5
+3	9361	1673427289188465690	CMakeFiles/ISO_object.dir/src/iso22133object.cpp.o	afbc9e8174e270a3
+31	5523	1673427285356415418	CMakeFiles/ISO_object.dir/src/iso22133state.cpp.o	37d8fcf59bdc0ff0
+442	1149	1673426927592013798	iso22133/CMakeFiles/ISO22133.dir/src/osem.c.o	8c2e2a15fd4ade3e
+2848	3027	1673426929468035186	/home/jesper/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/build/intermediates/cxx/Release/582h2z1f/obj/arm64-v8a/libISO22133.so	f5d299be9ec8224a
+144	484	1673426926904005960	iso22133/CMakeFiles/ISO22133.dir/src/iohelpers.c.o	ccd2547304a88326
+124	526	1673426926964006643	iso22133/CMakeFiles/ISO22133.dir/src/footer.c.o	9abc95373574a932
+76	691	1673426927116008375	iso22133/CMakeFiles/ISO22133.dir/positioning.c.o	fdffbdb5e671f77f
+136	442	1673426926872005595	iso22133/CMakeFiles/ISO22133.dir/src/header.c.o	bfa051ed0602f41a
+526	701	1673426927132008557	iso22133/CMakeFiles/ISO22133.dir/src/timeconversions.c.o	51727a1071795517
+164	860	1673426927272010152	iso22133/CMakeFiles/ISO22133.dir/src/monr.c.o	73238a895e020b7c
+41	4973	1673427284804408181	CMakeFiles/ISO_objectDemo.dir/demoIsoObject.cpp.o	b53663ab6f5c2412
+691	1341	1673426927768015804	iso22133/CMakeFiles/ISO22133.dir/src/traj.c.o	c1e4f98492834b6e
+90	2848	1673426929252032721	iso22133/CMakeFiles/ISO22133.dir/iso22133.c.o	caf5808be19620b9
+484	834	1673426927272010152	iso22133/CMakeFiles/ISO22133.dir/src/ostm.c.o	4048df326cc58135
+37	4283	1673426930720049470	CMakeFiles/ISO_object.dir/src/trajDecoder.cpp.o	68946f25b83b194d

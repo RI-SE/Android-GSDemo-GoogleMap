@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/ISO_objectDemo.dir/demoIsoObject.cpp.o"
+  "CMakeFiles/ISO_objectDemo.dir/demoIsoObject.cpp.o.d"
   "ISO_objectDemo"
   "ISO_objectDemo.pdb"
 )
