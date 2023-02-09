@@ -1003,7 +1003,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
 
     private void pauseWaypointMission(){
 
-        getWaypointMissionOperator().pauseMission(new CommonCallbacks.CompletionCallback() {
+        getWaypointMissionOperator().pauseMissionpauseMission(new CommonCallbacks.CompletionCallback() {
             @Override
             public void onResult(DJIError error) {
                 setResultToToast("Mission paused: " + (error == null ? "Successfully" : error.getDescription()));
