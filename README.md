@@ -51,21 +51,22 @@ Boost-for-Android/build/out/arm64-v8a/include
 Boost-for-Android/build/out/arm64-v8a/lib
 ```
 
-We now build the app, linking it to boost and util libraries and deploy it using AndroidStudio
+We now build the app, linking it to boost and 
+libraries and deploy it using AndroidStudio
 #### Build and deploy with AndroidStudio
 Clone the repository:
 ``` 
 git clone git@github.com:RI-SE/Android-GSDemo-GoogleMap.git
 ```
 
-Clone the util repo containing ISO22133 object implementation:
+Clone the isoObject repo containing ISO22133 object implementation:
 ```
-git clone git@github.com:RI-SE/util.git
+git clone git@github.com:RI-SE/isoObject.git
 ```
 
-Change directory to the util repo and initialize and update git submodules:
+Change directory to the isoObject repo and initialize and update git submodules:
 ```
-cd util && git submodule init && git submodule update --recursive
+cd isoObject && git submodule update --init --recursive
 ```
 
 Open the project Android-GSDemo-GoogleMap in AndroidStudio.
