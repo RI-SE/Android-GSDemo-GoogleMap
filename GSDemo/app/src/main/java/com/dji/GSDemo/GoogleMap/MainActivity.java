@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
                FlightController flightController = ((Aircraft) product).getFlightController();
                 break;
             case R.id.chalmers_button:
-                System.out.println("WE GOT TO WORK!");
+                System.out.println("WE GOT IT TO WORK!");
                 startActivity(MainActivity.this, ChalmersDemo.class);
 
         }

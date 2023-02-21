@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 
-def my_boost_dir = "/home/globee/AndroidStudioProjects/Boost-for-Android/build/out/arm64-v8a"
+def my_boost_dir = "/home/c_oresten/git/Boost-for-Android/build/out/arm64-v8a"
 def my_boost_dir_libs = my_boost_dir + "/lib/"
 def my_boost_dir_inc  = my_boost_dir + "/include/boost-1_78/"
 
