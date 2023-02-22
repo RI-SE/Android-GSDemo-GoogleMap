@@ -564,11 +564,11 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
                         Log.wtf("newTraj", String.valueOf(drone.getReducedTraj().size()));
                         waypointSettings.clear();
                         drone.removePointsToClose();
-                        generateWaypointsFromTraj(new LatLng(droneLocationLat, droneLocationLng), drone.getReducedTraj()); //Use reduced
+                        generateWaypointsFromTraj(new LatLng(drone.getOrigin().getLatitude_deg(), drone.getOrigin().getLongitude_deg()), drone.getReducedTraj()); //Use reduced
                     }else{
                         waypointSettings.clear();
                         drone.removePointsToClose();
-                        generateWaypointsFromTraj(new LatLng(droneLocationLat, droneLocationLng), traj); // use set traj
+                        generateWaypointsFromTraj(new LatLng(drone.getOrigin().getLatitude_deg(), drone.getOrigin().getLongitude_deg()), traj); // use set traj
                     }
 
                     //generateTestCircleCoordinates(new LatLng(droneLocationLat, droneLocationLng), 10, 3, 1,19, true);
