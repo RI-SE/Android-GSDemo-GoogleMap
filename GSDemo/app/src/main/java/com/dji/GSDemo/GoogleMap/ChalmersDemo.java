@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
@@ -17,31 +18,39 @@ import com.google.android.gms.maps.model.LatLng;
 
 import dji.common.error.DJIError;
 import dji.common.flightcontroller.FlightControllerState;
+import dji.common.flightcontroller.LocationCoordinate3D;
+import dji.common.gimbal.CapabilityKey;
+import dji.common.gimbal.Rotation;
+import dji.common.gimbal.RotationMode;
 import dji.common.util.CommonCallbacks;
+import dji.common.util.DJIParamMinMaxCapability;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.flightcontroller.FlightController;
+import dji.sdk.gimbal.Gimbal;
 import dji.sdk.products.Aircraft;
 
 
-public class ChalmersDemo extends FragmentActivity implements View.OnClickListener{
+public class ChalmersDemo extends FragmentActivity implements View.OnClickListener {
 
     private FlightController flightController;
-    private Button up, down, stop;
+    private Gimbal gimbal;
+    private Button up, down, stop, gimbal_up, gimbal_down, gimbal_left, gimbal_right;
     private CommonCallbacks.CompletionCallback callback;
 
+
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
 //        initFlightController();
     }
 
     @Override
-    protected void onPause(){
+    protected void onPause() {
         super.onPause();
     }
 
     @Override
-    protected void onDestroy(){
+    protected void onDestroy() {
 //        unregisterReceiver(mReceiver);
 //        removeListener();
         super.onDestroy();
@@ -52,50 +61,126 @@ public class ChalmersDemo extends FragmentActivity implements View.OnClickListen
         down = (Button) findViewById(R.id.btn_down);
         stop = (Button) findViewById(R.id.btn_stop);
 
+        gimbal_up = (Button) findViewById(R.id.btn_gimbal_up);
+        gimbal_down = (Button) findViewById(R.id.btn_gimbal_down);
+        gimbal_left = (Button) findViewById(R.id.btn_gimbal_left);
+        gimbal_right = (Button) findViewById(R.id.btn_gimbal_right);
+
         up.setOnClickListener(this);
         down.setOnClickListener(this);
         stop.setOnClickListener(this);
+
+        gimbal_up.setOnClickListener(this);
+        gimbal_down.setOnClickListener(this);
+        gimbal_left.setOnClickListener(this);
+        gimbal_right.setOnClickListener(this);
+
     }
 
 
     @Override
     public void onClick(View v) {
+//        FlightControllerState flightControllerState = flightController.getState();
         switch (v.getId()) {
-            case R.id.btn_up:{
+            case R.id.btn_up: {
                 setResultToToast("GOING UP!!!!!");
 
-                flightController.turnOnMotors(new CommonCallbacks.CompletionCallback() {
-                    @Override
-                    public void onResult(DJIError djiError) {
-                        setResultToToast(djiError.getDescription());
-                    }
-                });
 
+//                if (!flightControllerState.areMotorsOn()) {
+//                    flightController.turnOnMotors(new CommonCallbacks.CompletionCallback() {
+//                        @Override
+//                        public void onResult(@Nullable final DJIError djiError) {
+//                            if (djiError != null) {
+//                                Log.wtf("CHALMERS_ERROR_UP", djiError.getDescription());
+//                            } else {
+//                                setResultToToast("Execution finished:");
+//                            }
+//                        }
+//                    });
+//                }
+
+//                LocationCoordinate3D coords = flightControllerState.getAircraftLocation();
+
+//                Log.wtf("COORDS", coords.toString());
                 break;
             }
-            case R.id.btn_down:{
+            case R.id.btn_down: {
                 setResultToToast("GOING DOWN!!!!!");
 
                 flightController.turnOffMotors(new CommonCallbacks.CompletionCallback() {
                     @Override
-                    public void onResult(DJIError djiError) {
-                        setResultToToast(djiError.getDescription());
+                    public void onResult(@Nullable final DJIError djiError) {
+                        if (djiError != null) {
+                            Log.wtf("CHALMERS_ERROR_UP", djiError.getDescription());
+                        } else {
+                            setResultToToast("Execution finished:");
+                        }
                     }
+
                 });
 
                 break;
             }
-            case R.id.btn_stop:{
+            case R.id.btn_stop: {
                 setResultToToast("STOP MOTHERFUCKER!");
+
                 break;
             }
 
+            case R.id.btn_gimbal_up: {
+                changeGimbalAngles(24, Rotation.NO_ROTATION, Rotation.NO_ROTATION);
+                Log.wtf("GIMBAL up", "gimbal up");
+                break;
+            }
+
+            case R.id.btn_gimbal_down: {
+                changeGimbalAngles(-90, Rotation.NO_ROTATION, Rotation.NO_ROTATION);
+                Log.wtf("GIMBAL down", "gimbal down");
+                break;
+            }
+
+            case R.id.btn_gimbal_left: {
+                changeGimbalAngles(Rotation.NO_ROTATION, 40, Rotation.NO_ROTATION);
+                Log.wtf("GIMBAL left", "gimbal left");
+                break;
+            }
+
+            case R.id.btn_gimbal_right: {
+                changeGimbalAngles(Rotation.NO_ROTATION, -40, Rotation.NO_ROTATION);
+                Log.wtf("GIMBAL right", "gimbal right");
+                break;
+            }
             default:
                 break;
         }
     }
 
-    private void setResultToToast(final String string){
+    private void changeGimbalAngles(float pitch, float yaw, float roll) {
+        if (gimbal == null) return;
+        Log.wtf("GIMBAL", "VAFAN JA VILL");
+
+        gimbal.rotate(new Rotation.Builder()
+                        .pitch(pitch)
+                        .yaw(yaw)
+                        .roll(roll)
+                        .time(1)
+                        .mode(RotationMode.ABSOLUTE_ANGLE)
+                        .build()
+                , new CommonCallbacks.CompletionCallback() {
+                    @Override
+                    public void onResult(DJIError djiError) {
+                        if (djiError == null) {
+                            Log.d("GIMBAL", "rotate gimbal success");
+//                    showToast("rotate gimbal success");
+                        } else {
+                            Log.d("GIMBAL", "rotate gimbal error " + djiError.getDescription());
+//                    showToast(djiError.getDescription());
+                        }
+                    }
+                });
+    }
+
+    private void setResultToToast(final String string) {
         ChalmersDemo.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -112,25 +197,22 @@ public class ChalmersDemo extends FragmentActivity implements View.OnClickListen
                 flightController = ((Aircraft) product).getFlightController();
             }
         }
-
-//        if (flightController != null) {
-//            flightController.setStateCallback(new FlightControllerState.Callback() {
-//
-//                @Override
-//                public void onUpdate(FlightControllerState djiFlightControllerCurrentState) {
-//                    droneLocationLat = djiFlightControllerCurrentState.getAircraftLocation().getLatitude();
-//                    droneLocationLng = djiFlightControllerCurrentState.getAircraftLocation().getLongitude();
-//                    droneAltitude = djiFlightControllerCurrentState.getAircraftLocation().getAltitude();
-//                    updateDroneLocationData();
-//                }
-//            });
-//        }
     }
 
+    private void initCameraGimbal() {
+        BaseProduct product = DJIDemoApplication.getProductInstance();
+        if (product != null && product.isConnected()) {
+            if (product instanceof Aircraft) {
+                gimbal = ((Aircraft) product).getGimbal();
+            }
+        }
+//        Gimbal gimbal = DJIDemoApplication.getProductInstance().getGimbal();
+    }
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initFlightController();
+        initCameraGimbal();
 
         // When the compile and target version is higher than 22, please request the
         // following permissions at runtime to ensure the
