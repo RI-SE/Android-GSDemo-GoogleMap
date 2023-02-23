@@ -567,8 +567,9 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
                         generateWaypointsFromTraj(new LatLng(drone.getOrigin().getLatitude_deg(), drone.getOrigin().getLongitude_deg()), drone.getReducedTraj()); //Use reduced
                     }else{
                         waypointSettings.clear();
+                        drone.reducedTraj = drone.getTrajectory(); //Put the non douglas-peucker:ed traj in
                         drone.removePointsToClose();
-                        generateWaypointsFromTraj(new LatLng(drone.getOrigin().getLatitude_deg(), drone.getOrigin().getLongitude_deg()), traj); // use set traj
+                        generateWaypointsFromTraj(new LatLng(drone.getOrigin().getLatitude_deg(), drone.getOrigin().getLongitude_deg()), drone.reducedTraj); // use set traj
                     }
 
                     //generateTestCircleCoordinates(new LatLng(droneLocationLat, droneLocationLng), 10, 3, 1,19, true);
