@@ -4,9 +4,11 @@ import static com.dji.GSDemo.GoogleMap.Tools.showToast;
 
 import android.Manifest;
 import android.content.IntentFilter;
+import android.graphics.SurfaceTexture;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -31,15 +33,19 @@ import dji.common.flightcontroller.virtualstick.VerticalControlMode;
 import dji.common.gimbal.CapabilityKey;
 import dji.common.gimbal.Rotation;
 import dji.common.gimbal.RotationMode;
+import dji.common.product.Model;
 import dji.common.util.CommonCallbacks;
 import dji.common.util.DJIParamMinMaxCapability;
 import dji.sdk.base.BaseProduct;
+import dji.sdk.camera.Camera;
+import dji.sdk.camera.VideoFeeder;
+import dji.sdk.codec.DJICodecManager;
 import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.gimbal.Gimbal;
 import dji.sdk.products.Aircraft;
 
 
-public class ChalmersDemo extends FragmentActivity implements View.OnClickListener {
+public class ChalmersDemo extends FragmentActivity implements TextureView.SurfaceTextureListener, View.OnClickListener {
 
     private FlightController flightController;
     private FlightControllerState djiFlightControllerCurrentState;
@@ -56,11 +62,22 @@ public class ChalmersDemo extends FragmentActivity implements View.OnClickListen
     private float mThrottle;
     public double getDroneLocationLat(){return droneLocationLat;}
     public double getDroneLocationLng(){return droneLocationLng;}
+    private static final String TAG = MainActivity.class.getName();
+    protected VideoFeeder.VideoDataListener mReceivedVideoDataListener = null;
+    TextureView mVideoSurface;
+    private DJICodecManager mCodecManager;
+
 
     @Override
     protected void onResume() {
+        Log.e(TAG, "onResume");
         super.onResume();
-//        initFlightController();
+        initPreviewer();
+        onProductChange();
+
+        if(mVideoSurface == null) {
+            Log.e(TAG, "mVideoSurface is null");
+        }
     }
 
     @Override
@@ -74,6 +91,42 @@ public class ChalmersDemo extends FragmentActivity implements View.OnClickListen
 //        removeListener();
         super.onDestroy();
     }
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    public void onReturn(View view){
+        this.finish();
+    }
+//    @Override
+    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+        Log.e(TAG, "onSurfaceTextureAvailable");
+        if (mCodecManager == null) {
+            mCodecManager = new DJICodecManager(this, surface, width, height);
+        }
+    }
+
+//    @Override
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+        Log.e(TAG, "onSurfaceTextureSizeChanged");
+    }
+
+//    @Override
+    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+
+        Log.e(TAG,"onSurfaceTextureDestroyed");
+        if (mCodecManager != null) {
+            mCodecManager.cleanSurface();
+            mCodecManager = null;
+        }
+
+        return false;
+    }
+//    @Override
+    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+    }
+
 
     private void initUI() {
         stop = (Button) findViewById(R.id.btn_stop);
@@ -89,6 +142,13 @@ public class ChalmersDemo extends FragmentActivity implements View.OnClickListen
         gimbal_right = (Button) findViewById(R.id.btn_gimbal_right);
 
 
+        mVideoSurface = (TextureView) findViewById(R.id.video_preview_surface);
+        if (null != mVideoSurface) {
+            mVideoSurface.setSurfaceTextureListener(this);
+        }
+
+        up.setOnClickListener(this);
+        down.setOnClickListener(this);
         stop.setOnClickListener(this);
 
         enable_virtual_sticks.setOnClickListener(this);
@@ -101,12 +161,11 @@ public class ChalmersDemo extends FragmentActivity implements View.OnClickListen
         gimbal_down.setOnClickListener(this);
         gimbal_left.setOnClickListener(this);
         gimbal_right.setOnClickListener(this);
+
     }
-
-
     @Override
     public void onClick(View v) {
-//        FlightControllerState flightControllerState = flightController.getState();
+        FlightControllerState flightControllerState = flightController.getState();
         switch (v.getId()) {
             case R.id.btn_enable_virtual_sticks: {
                 if (flightController != null){
@@ -126,6 +185,19 @@ public class ChalmersDemo extends FragmentActivity implements View.OnClickListen
                 break;
             }
 
+
+                if (!flightControllerState.areMotorsOn()) {
+                    flightController.turnOnMotors(new CommonCallbacks.CompletionCallback() {
+                        @Override
+                        public void onResult(@Nullable final DJIError djiError) {
+                            if (djiError != null) {
+                                Log.wtf("CHALMERS_ERROR_UP", djiError.getDescription());
+                            } else {
+                                setResultToToast("Execution finished:");
+                            }
+                        }
+                    });
+                }
             case R.id.btn_disable_virtual_sticks: {
                 if (flightController != null){
                     flightController.setVirtualStickModeEnabled(false, new CommonCallbacks.CompletionCallback() {
@@ -143,7 +215,7 @@ public class ChalmersDemo extends FragmentActivity implements View.OnClickListen
                 }
                 break;
             }
-            
+
             case R.id.btn_take_off: {
                 if (flightController != null){
                     flightController.startTakeoff(
@@ -160,8 +232,30 @@ public class ChalmersDemo extends FragmentActivity implements View.OnClickListen
                     );
                 }
 
+                LocationCoordinate3D coords = flightControllerState.getAircraftLocation();
+
+                Log.wtf("COORDS", coords.toString());
                 break;
             }
+            case R.id.btn_down: {
+                setResultToToast("GOING DOWN!!!!!");
+
+
+
+                break;
+            }
+            case R.id.btn_stop: {
+                setResultToToast("STOP MOTHERFUCKER!");
+
+                flightController.turnOffMotors(new CommonCallbacks.CompletionCallback() {
+                    @Override
+                    public void onResult(@Nullable final DJIError djiError) {
+                        if (djiError != null) {
+                            Log.wtf("CHALMERS_ERROR_UP", djiError.getDescription());
+                        } else {
+                            setResultToToast("Execution finished:");
+                        }
+                    }
             case R.id.btn_land: {
                 if (flightController != null){
                     flightController.startLanding(
@@ -184,6 +278,7 @@ public class ChalmersDemo extends FragmentActivity implements View.OnClickListen
 
             case R.id.btn_stop: {
                 setResultToToast("STOP MOTHERFUCKER!");
+                });
                 break;
             }
 
@@ -308,6 +403,7 @@ public class ChalmersDemo extends FragmentActivity implements View.OnClickListen
                 gimbal = ((Aircraft) product).getGimbal();
             }
         }
+//        Gimbal gimbal = DJIDemoApplication.getProductInstance().getGimbal();
     }
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -340,6 +436,44 @@ public class ChalmersDemo extends FragmentActivity implements View.OnClickListen
 
         initUI();
 
+        mReceivedVideoDataListener = new VideoFeeder.VideoDataListener() {
+
+            @Override
+            public void onReceive(byte[] videoBuffer, int size) {
+                if (mCodecManager != null) {
+                    mCodecManager.sendDataToDecoder(videoBuffer, size);
+                }
+            }
+        };
     }
+
+    protected void onProductChange() {
+        initPreviewer();
+    }
+
+    private void initPreviewer() {
+
+        BaseProduct product = DJIDemoApplication.getProductInstance();
+
+        if (product == null || !product.isConnected()) {
+            setResultToToast(getString(R.string.disconnected));
+        } else {
+            if (null != mVideoSurface) {
+                mVideoSurface.setSurfaceTextureListener(this);
+            }
+            if (!product.getModel().equals(Model.UNKNOWN_AIRCRAFT)) {
+                VideoFeeder.getInstance().getPrimaryVideoFeed().addVideoDataListener(mReceivedVideoDataListener);
+            }
+        }
+    }
+
+    private void uninitPreviewer() {
+        Camera camera = DJIDemoApplication.getProductInstance().getCamera();
+        if (camera != null){
+            // Reset the callback
+            VideoFeeder.getInstance().getPrimaryVideoFeed().addVideoDataListener(null);
+        }
+    }
+
 
 }
