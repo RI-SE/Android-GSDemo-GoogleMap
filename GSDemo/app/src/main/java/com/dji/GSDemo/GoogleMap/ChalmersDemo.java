@@ -6,6 +6,7 @@ import android.graphics.SurfaceTexture;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
@@ -15,18 +16,16 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import dji.common.error.DJIError;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.common.flightcontroller.LocationCoordinate3D;
-import dji.common.gimbal.CapabilityKey;
 import dji.common.gimbal.Rotation;
 import dji.common.gimbal.RotationMode;
 import dji.common.product.Model;
 import dji.common.util.CommonCallbacks;
-import dji.common.util.DJIParamMinMaxCapability;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.camera.Camera;
 import dji.sdk.camera.VideoFeeder;
@@ -36,17 +35,20 @@ import dji.sdk.gimbal.Gimbal;
 import dji.sdk.products.Aircraft;
 
 
-public class ChalmersDemo extends FragmentActivity implements TextureView.SurfaceTextureListener, View.OnClickListener {
+public class ChalmersDemo extends FragmentActivity implements TextureView.SurfaceTextureListener, View.OnClickListener, View.OnTouchListener {
 
+    private static final String TAG = MainActivity.class.getName();
+    protected VideoFeeder.VideoDataListener mReceivedVideoDataListener = null;
+    TextureView mVideoSurface;
+    Timer mGimbalTaskTimer;
     private FlightController flightController;
     private Gimbal gimbal;
     private Button up, down, stop, gimbal_up, gimbal_down, gimbal_left, gimbal_right;
     private CommonCallbacks.CompletionCallback callback;
-    private static final String TAG = MainActivity.class.getName();
-    protected VideoFeeder.VideoDataListener mReceivedVideoDataListener = null;
-    TextureView mVideoSurface;
     private DJICodecManager mCodecManager;
-
+    private float mGimbalPitch;
+    private float mGimbalRoll;
+    private float mGimbalYaw;
 
     @Override
     protected void onResume() {
@@ -55,7 +57,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         initPreviewer();
         onProductChange();
 
-        if(mVideoSurface == null) {
+        if (mVideoSurface == null) {
             Log.e(TAG, "mVideoSurface is null");
         }
     }
@@ -71,15 +73,17 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 //        removeListener();
         super.onDestroy();
     }
+
     @Override
     public void onStop() {
         super.onStop();
     }
 
-    public void onReturn(View view){
+    public void onReturn(View view) {
         this.finish();
     }
-//    @Override
+
+    //    @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         Log.e(TAG, "onSurfaceTextureAvailable");
         if (mCodecManager == null) {
@@ -87,15 +91,15 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         }
     }
 
-//    @Override
+    //    @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
         Log.e(TAG, "onSurfaceTextureSizeChanged");
     }
 
-//    @Override
+    //    @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
 
-        Log.e(TAG,"onSurfaceTextureDestroyed");
+        Log.e(TAG, "onSurfaceTextureDestroyed");
         if (mCodecManager != null) {
             mCodecManager.cleanSurface();
             mCodecManager = null;
@@ -103,7 +107,8 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
         return false;
     }
-//    @Override
+
+    //    @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
     }
 
@@ -127,12 +132,18 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         down.setOnClickListener(this);
         stop.setOnClickListener(this);
 
-        gimbal_up.setOnClickListener(this);
-        gimbal_down.setOnClickListener(this);
-        gimbal_left.setOnClickListener(this);
-        gimbal_right.setOnClickListener(this);
+//        gimbal_up.setOnClickListener(this);
+//        gimbal_down.setOnClickListener(this);
+//        gimbal_left.setOnClickListener(this);
+//        gimbal_right.setOnClickListener(this);
 
+
+        gimbal_up.setOnTouchListener(this);
+        gimbal_down.setOnTouchListener(this);
+        gimbal_left.setOnTouchListener(this);
+        gimbal_right.setOnTouchListener(this);
     }
+
     @Override
     public void onClick(View v) {
         FlightControllerState flightControllerState = flightController.getState();
@@ -161,7 +172,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             }
             case R.id.btn_down: {
                 setResultToToast("GOING DOWN!!!!!");
-
 
 
                 break;
@@ -211,9 +221,54 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         }
     }
 
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        int action = motionEvent.getAction();
+        switch (view.getId()) {
+            case R.id.btn_gimbal_up: {
+                mGimbalPitch = 5;
+                mGimbalRoll = 0;
+                mGimbalYaw = 0;
+                break;
+            }
+            case R.id.btn_gimbal_down: {
+                mGimbalPitch = -5;
+                mGimbalRoll = 0;
+                mGimbalYaw = 0;
+                break;
+            }
+            case R.id.btn_gimbal_right: {
+                mGimbalPitch = 0;
+                mGimbalRoll = 5;
+                mGimbalYaw = 0;
+                break;
+            }
+            case R.id.btn_gimbal_left: {
+                mGimbalPitch = 0;
+                mGimbalRoll = -5;
+                mGimbalYaw = 0;
+                break;
+            }
+        }
+
+        if (action == MotionEvent.ACTION_DOWN) {
+            if (null == mGimbalTaskTimer) {
+                ChangeGimbalTask mGimbalTask = new ChangeGimbalTask();
+                mGimbalTaskTimer = new Timer();
+                mGimbalTaskTimer.schedule(mGimbalTask, 50, 100);
+            }
+
+        } else if (action == MotionEvent.ACTION_UP) {
+            if (mGimbalTaskTimer != null) {
+                mGimbalTaskTimer.cancel();
+                mGimbalTaskTimer.purge();
+            }
+        }
+        return true;
+    }
     private void changeGimbalAngles(float pitch, float yaw, float roll) {
         if (gimbal == null) return;
-        Log.wtf("GIMBAL", "VAFAN JA VILL");
+        Log.wtf("GIMBAL", "Changing gimbal angle...");
 
         gimbal.rotate(new Rotation.Builder()
                         .pitch(pitch)
@@ -328,9 +383,34 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
     private void uninitPreviewer() {
         Camera camera = DJIDemoApplication.getProductInstance().getCamera();
-        if (camera != null){
+        if (camera != null) {
             // Reset the callback
             VideoFeeder.getInstance().getPrimaryVideoFeed().addVideoDataListener(null);
+        }
+    }
+
+    class ChangeGimbalTask extends TimerTask {
+        @Override
+        public void run() {
+            gimbal.rotate(new Rotation.Builder()
+                            .pitch(mGimbalPitch)
+                            .yaw(mGimbalYaw)
+                            .roll(mGimbalRoll)
+                            .time(1)
+                            .mode(RotationMode.RELATIVE_ANGLE)
+                            .build()
+                    , new CommonCallbacks.CompletionCallback() {
+                        @Override
+                        public void onResult(DJIError djiError) {
+                            if (djiError == null) {
+                                Log.d("GIMBAL", "rotate gimbal success");
+//                    showToast("rotate gimbal success");
+                            } else {
+                                Log.d("GIMBAL", "rotate gimbal error " + djiError.getDescription());
+//                    showToast(djiError.getDescription());
+                            }
+                        }
+                    });
         }
     }
 
