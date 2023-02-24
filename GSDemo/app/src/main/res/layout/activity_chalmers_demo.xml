@@ -6,16 +6,28 @@
     android:layout_height="match_parent">
 
     <Button
-        android:id="@+id/btn_stop"
+        android:id="@+id/btn_gimbal_down"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="160dp"
-        android:layout_marginTop="624dp"
-        android:layout_marginEnd="160dp"
-        android:text="STOP"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="163dp"
+        android:text="DOWN"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/GIMBAL_TEXT" />
+
+    <Button
+        android:id="@+id/btn_gimbal_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="348dp"
+        android:layout_marginEnd="74dp"
+        android:text="RIGHT"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/GIMBAL_TEXT"
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
@@ -34,35 +46,11 @@
         app:layout_constraintTop_toBottomOf="@+id/btn_gimbal_up" />
 
     <Button
-        android:id="@+id/btn_gimbal_up"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="160dp"
-        android:layout_marginTop="100dp"
-        android:layout_marginEnd="163dp"
-        android:text="UP"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_land" />
-
-    <Button
-        android:id="@+id/btn_gimbal_right"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="436dp"
-        android:layout_marginEnd="74dp"
-        android:text="RIGHT"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/GIMBAL_TEXT"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
         android:id="@+id/btn_gimbal_left"
         android:layout_width="88dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="72dp"
-        android:layout_marginTop="436dp"
+        android:layout_marginTop="348dp"
         android:layout_marginEnd="2dp"
         android:text="LEFT"
         app:layout_constraintEnd_toStartOf="@+id/GIMBAL_TEXT"
@@ -70,16 +58,30 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/btn_gimbal_down"
+        android:id="@+id/btn_stop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="160dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="163dp"
-        android:text="DOWN"
+        android:layout_marginTop="480dp"
+        android:layout_marginEnd="160dp"
+        android:text="STOP"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/GIMBAL_TEXT" />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btn_gimbal_up"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="160dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="163dp"
+        android:text="UP"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_land" />
 
     <Button
         android:id="@+id/btn_take_off"
@@ -128,4 +130,18 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextureView
+        android:id="@+id/video_preview_surface"
+        android:layout_width="333dp"
+        android:layout_height="155dp"
+        android:layout_marginStart="39dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="39dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_stop" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

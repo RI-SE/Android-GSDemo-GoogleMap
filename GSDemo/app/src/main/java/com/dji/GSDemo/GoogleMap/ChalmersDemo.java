@@ -147,8 +147,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             mVideoSurface.setSurfaceTextureListener(this);
         }
 
-        up.setOnClickListener(this);
-        down.setOnClickListener(this);
         stop.setOnClickListener(this);
 
         enable_virtual_sticks.setOnClickListener(this);
@@ -184,20 +182,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 }
                 break;
             }
-
-
-                if (!flightControllerState.areMotorsOn()) {
-                    flightController.turnOnMotors(new CommonCallbacks.CompletionCallback() {
-                        @Override
-                        public void onResult(@Nullable final DJIError djiError) {
-                            if (djiError != null) {
-                                Log.wtf("CHALMERS_ERROR_UP", djiError.getDescription());
-                            } else {
-                                setResultToToast("Execution finished:");
-                            }
-                        }
-                    });
-                }
             case R.id.btn_disable_virtual_sticks: {
                 if (flightController != null){
                     flightController.setVirtualStickModeEnabled(false, new CommonCallbacks.CompletionCallback() {
@@ -237,13 +221,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 Log.wtf("COORDS", coords.toString());
                 break;
             }
-            case R.id.btn_down: {
-                setResultToToast("GOING DOWN!!!!!");
 
-
-
-                break;
-            }
             case R.id.btn_stop: {
                 setResultToToast("STOP MOTHERFUCKER!");
 
@@ -255,7 +233,11 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                         } else {
                             setResultToToast("Execution finished:");
                         }
+
                     }
+                });
+                break;
+            }
             case R.id.btn_land: {
                 if (flightController != null){
                     flightController.startLanding(
@@ -269,18 +251,11 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                                     }
                                 }
                             }
-                    );
+                    );}
 
-                }
 
-                break;
-            }
 
-            case R.id.btn_stop: {
-                setResultToToast("STOP MOTHERFUCKER!");
-                });
-                break;
-            }
+                break;}
 
             case R.id.btn_gimbal_up: {
                 changeGimbalAngles(24, Rotation.NO_ROTATION, Rotation.NO_ROTATION);
@@ -309,7 +284,9 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             default:
                 break;
         }
+
     }
+
 
     private void changeGimbalAngles(float pitch, float yaw, float roll) {
         if (gimbal == null) return;
