@@ -1,147 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ChalmersDemo"
+    android:textAlignment="center">
 
-    <Button
-        android:id="@+id/btn_gimbal_down"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="160dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="163dp"
-        android:text="DOWN"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/GIMBAL_TEXT" />
 
-    <Button
-        android:id="@+id/btn_gimbal_right"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="348dp"
-        android:layout_marginEnd="74dp"
-        android:text="RIGHT"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/GIMBAL_TEXT"
-        app:layout_constraintTop_toTopOf="parent" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:orientation="horizontal"
+        android:background="@color/cast_intro_overlay_background_color">
 
-    <EditText
-        android:id="@+id/GIMBAL_TEXT"
-        android:layout_width="82dp"
-        android:layout_height="44dp"
-        android:layout_marginStart="3dp"
-        android:layout_marginTop="6dp"
-        android:layout_marginEnd="3dp"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:text="GIMBAL"
-        app:layout_constraintBottom_toTopOf="@+id/btn_gimbal_down"
-        app:layout_constraintEnd_toStartOf="@+id/btn_gimbal_right"
-        app:layout_constraintStart_toEndOf="@+id/btn_gimbal_left"
-        app:layout_constraintTop_toBottomOf="@+id/btn_gimbal_up" />
+        <ImageView
+            android:layout_width="126dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:paddingEnd="-80dp"
+            android:paddingStart="0dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/astazero"
+            />
 
-    <Button
-        android:id="@+id/btn_gimbal_left"
-        android:layout_width="88dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="72dp"
-        android:layout_marginTop="348dp"
-        android:layout_marginEnd="2dp"
-        android:text="LEFT"
-        app:layout_constraintEnd_toStartOf="@+id/GIMBAL_TEXT"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <Button
+            android:id="@+id/btn_drone_con"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:text="DRONE CONNECTION"
+            android:textColor="@android:color/white"
+            android:background="@android:color/holo_red_light"
+            android:enabled="false"
+            />
 
-    <Button
-        android:id="@+id/btn_stop"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="160dp"
-        android:layout_marginTop="480dp"
-        android:layout_marginEnd="160dp"
-        android:text="STOP"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <Button
+            android:id="@+id/btn_ip_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="15dp"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:text="IP-Address"
+            android:textColor="@android:color/white"
+            android:background="@android:color/holo_green_dark"
+            android:enabled="false"
+            />
 
-    <Button
-        android:id="@+id/btn_gimbal_up"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="160dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="163dp"
-        android:text="UP"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_land" />
+        <Button
+            android:id="@+id/btn_drone_state"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="20dp"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:text="DRONE STATE"
+            android:textColor="@android:color/white"
+            android:background="@android:color/holo_red_light"
+            android:enabled="false"
+            />
+        <Button
+            android:id="@+id/btn_atos_con"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="20dp"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:text="ATOS CONNECTION"
+            android:textColor="@android:color/white"
+            android:background="@android:color/holo_red_light"
+            android:enabled="false"
+            />
 
-    <Button
-        android:id="@+id/btn_take_off"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="160dp"
-        android:layout_marginTop="168dp"
-        android:layout_marginEnd="163dp"
-        android:text="Take Off"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/btn_land"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="159dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="164dp"
-        android:text="Land"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_take_off" />
 
-    <Button
-        android:id="@+id/btn_enable_virtual_sticks"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="112dp"
-        android:layout_marginTop="40dp"
-        android:layout_marginEnd="113dp"
-        android:text="Enable Virtual Sticks"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/btn_disable_virtual_sticks"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="108dp"
-        android:layout_marginTop="108dp"
-        android:layout_marginEnd="114dp"
-        android:text="Disable Virtual Sticks"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+
+
+
+    </LinearLayout>
 
     <TextureView
         android:id="@+id/video_preview_surface"
-        android:layout_width="333dp"
-        android:layout_height="155dp"
-        android:layout_marginStart="39dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="39dp"
-        android:layout_marginBottom="16dp"
+        android:layout_width="729dp"
+        android:layout_height="330dp"
+        android:layout_marginEnd="162dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_stop" />
+        app:layout_constraintStart_toStartOf="parent" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</LinearLayout>

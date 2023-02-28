@@ -42,6 +42,7 @@ import dji.common.gimbal.Rotation;
 import dji.common.gimbal.RotationMode;
 import dji.common.product.Model;
 import dji.common.util.CommonCallbacks;
+import dji.midware.data.model.P3.B;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.camera.Camera;
 import dji.sdk.camera.VideoFeeder;
@@ -53,7 +54,7 @@ import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKManager;
 
 
-public class ChalmersDemo extends FragmentActivity implements TextureView.SurfaceTextureListener, View.OnClickListener, View.OnTouchListener {
+public class ChalmersDemo extends FragmentActivity implements TextureView.SurfaceTextureListener {
 
     private static final String TAG = MainActivity.class.getName();
     protected VideoFeeder.VideoDataListener mReceivedVideoDataListener = null;
@@ -67,7 +68,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     private IsoDrone drone;
     private double droneLocationLat = 57.688859d, droneLocationLng = 11.978795d, droneAltitude = 0d; // Johanneberg
     private Gimbal gimbal;
-    private Button take_off, land, enable_virtual_sticks, disable_virtual_sticks, stop, gimbal_up, gimbal_down, gimbal_left, gimbal_right;
+    private Button btn_atos_con, btn_drone_con, btn_ip_address, btn_drone_state;
     private CommonCallbacks.CompletionCallback callback;
     private float mPitch;
     private float mRoll;
@@ -155,203 +156,21 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
 
     private void initUI() {
-        stop = (Button) findViewById(R.id.btn_stop);
 
-        enable_virtual_sticks = (Button) findViewById(R.id.btn_enable_virtual_sticks);
-        disable_virtual_sticks = (Button) findViewById(R.id.btn_disable_virtual_sticks);
-        take_off = (Button) findViewById(R.id.btn_take_off);
-        land = (Button) findViewById(R.id.btn_land);
+        btn_atos_con = (Button) findViewById(R.id.btn_atos_con);
+        btn_drone_con = (Button) findViewById(R.id.btn_drone_con);
+        btn_drone_state = (Button)  findViewById(R.id.btn_drone_state);
+        btn_ip_address = (Button) findViewById(R.id.btn_ip_address);
 
-        gimbal_up = (Button) findViewById(R.id.btn_gimbal_up);
-        gimbal_down = (Button) findViewById(R.id.btn_gimbal_down);
-        gimbal_left = (Button) findViewById(R.id.btn_gimbal_left);
-        gimbal_right = (Button) findViewById(R.id.btn_gimbal_right);
+        btn_ip_address.setText(Utils.getIPAddress(true));
+        btn_drone_state.setText("State: Undefined");
 
         mVideoSurface = (TextureView) findViewById(R.id.video_preview_surface);
         if (null != mVideoSurface) {
             mVideoSurface.setSurfaceTextureListener(this);
+
+
         }
-
-        stop.setOnClickListener(this);
-
-        enable_virtual_sticks.setOnClickListener(this);
-        disable_virtual_sticks.setOnClickListener(this);
-
-        take_off.setOnClickListener(this);
-        land.setOnClickListener(this);
-
-        gimbal_up.setOnTouchListener(this);
-        gimbal_down.setOnTouchListener(this);
-        gimbal_left.setOnTouchListener(this);
-        gimbal_right.setOnTouchListener(this);
-    }
-
-    @Override
-    public void onClick(View v) {
-        FlightControllerState flightControllerState = flightController.getState();
-        switch (v.getId()) {
-            case R.id.btn_enable_virtual_sticks: {
-                if (flightController != null) {
-                    flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
-                        @Override
-                        public void onResult(DJIError djiError) {
-                            if (djiError != null) {
-                                Log.wtf("Virtual Sticks Error", djiError.getDescription());
-                                setResultToToast("Enable Virtual Sticks Error, check Log");
-                            } else {
-                                setResultToToast("Enable Virtual Sticks Success");
-                            }
-                        }
-                    });
-                }
-                break;
-            }
-            case R.id.btn_disable_virtual_sticks: {
-                if (flightController != null) {
-                    flightController.setVirtualStickModeEnabled(false, new CommonCallbacks.CompletionCallback() {
-                        @Override
-                        public void onResult(DJIError djiError) {
-                            if (djiError != null) {
-                                Log.wtf("Virtual Sticks Error", djiError.getDescription());
-                                setResultToToast("Disable Virtual Sticks Error, check Log");
-                            } else {
-                                setResultToToast("Disable Virtual Sticks Success");
-                            }
-                        }
-                    });
-                }
-                break;
-            }
-
-            case R.id.btn_take_off: {
-                if (flightController != null) {
-                    flightController.startTakeoff(
-                            new CommonCallbacks.CompletionCallback() {
-                                @Override
-                                public void onResult(DJIError djiError) {
-                                    if (djiError != null) {
-                                        setResultToToast(djiError.getDescription());
-                                    } else {
-                                        setResultToToast("Take off Success");
-                                    }
-                                }
-                            }
-                    );
-                }
-
-                LocationCoordinate3D coords = flightControllerState.getAircraftLocation();
-
-                Log.wtf("COORDS", coords.toString());
-                break;
-            }
-
-            case R.id.btn_stop: {
-                setResultToToast("STOP MOTHERFUCKER!");
-
-                flightController.turnOffMotors(new CommonCallbacks.CompletionCallback() {
-                    @Override
-                    public void onResult(@Nullable final DJIError djiError) {
-                        if (djiError != null) {
-                            Log.wtf("CHALMERS_ERROR_UP", djiError.getDescription());
-                        } else {
-                            setResultToToast("Execution finished:");
-                        }
-                    }
-
-                });
-                break;
-            }
-
-            case R.id.btn_land: {
-                if (flightController != null) {
-                    flightController.startLanding(
-                            new CommonCallbacks.CompletionCallback() {
-                                @Override
-                                public void onResult(DJIError djiError) {
-                                    if (djiError != null) {
-                                        setResultToToast(djiError.getDescription());
-                                    } else {
-                                        setResultToToast("Start Landing");
-                                    }
-                                }
-                            }
-                    );
-                }
-
-
-                break;
-            }
-
-            case R.id.btn_gimbal_up: {
-                changeGimbalAngles(24, Rotation.NO_ROTATION, Rotation.NO_ROTATION);
-                Log.wtf("GIMBAL up", "gimbal up");
-                break;
-            }
-
-            default:
-                break;
-        }
-
-    }
-
-
-    @Override
-    public boolean onTouch(View view, MotionEvent motionEvent) {
-        Log.wtf(TAG, "We in OnTouchMethod");
-        int action = motionEvent.getAction();
-        switch (view.getId()) {
-            case R.id.btn_gimbal_up: {
-                Log.wtf(TAG, "Go up, pitch:" + mGimbalPitch + " roll:" + mGimbalRoll + "yaw: " + mGimbalYaw);
-                mGimbalPitch = 1;
-                mGimbalRoll = 0;
-                mGimbalYaw = 0;
-//                changeGimbalAngles(mGimbalPitch, mGimbalRoll, mGimbalYaw);
-                break;
-            }
-            case R.id.btn_gimbal_down: {
-                Log.wtf(TAG, "Go down, pitch:" + mGimbalPitch + " roll:" + mGimbalRoll + "yaw: " + mGimbalYaw);
-                mGimbalPitch = -1;
-                mGimbalRoll = 0;
-                mGimbalYaw = 0;
-
-//                changeGimbalAngles(mGimbalPitch, mGimbalRoll, mGimbalYaw);
-                break;
-            }
-            case R.id.btn_gimbal_right: {
-                Log.wtf(TAG, "Go right, pitch:" + mGimbalPitch + " roll:" + mGimbalRoll + "yaw: " + mGimbalYaw);
-                mGimbalPitch = 0;
-                mGimbalRoll = 0;
-                mGimbalYaw = -1;
-
-//                changeGimbalAngles(mGimbalPitch, mGimbalRoll, mGimbalYaw);
-                break;
-            }
-            case R.id.btn_gimbal_left: {
-                Log.wtf(TAG, "Go left, pitch:" + mGimbalPitch + " roll:" + mGimbalRoll + "yaw: " + mGimbalYaw);
-                mGimbalPitch = 0;
-                mGimbalRoll = 0;
-                mGimbalYaw = 1;
-//                changeGimbalAngles(mGimbalPitch, mGimbalRoll, mGimbalYaw);
-                break;
-            }
-        }
-
-        if (action == MotionEvent.ACTION_DOWN) {
-            setResultToToast("Touching down..");
-            if (null == mGimbalTaskTimer) {
-                ChangeGimbalTask mGimbalTask = new ChangeGimbalTask();
-                mGimbalTaskTimer = new Timer();
-                mGimbalTaskTimer.schedule(mGimbalTask, 25, 50);
-            }
-
-        } else if (action == MotionEvent.ACTION_UP) {
-            setResultToToast("Touching up..");
-            if (mGimbalTaskTimer != null) {
-                mGimbalTaskTimer.cancel();
-                mGimbalTaskTimer = null;
-            }
-        }
-        return true;
     }
 
     private void changeGimbalAngles(float pitch, float yaw, float roll) {
@@ -495,10 +314,12 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         }
     }
 
+
+
     private void updateDroneLocationData() {
 
         if (lastDroneState == "") {
-            drone = new IsoDrone("192.168.213.129");
+            drone = new IsoDrone("192.168.107.229");
             lastDroneState = drone.getCurrentStateName();
         }
         Log.wtf("Error", "Drone is in: " + drone.getCurrentStateName());
