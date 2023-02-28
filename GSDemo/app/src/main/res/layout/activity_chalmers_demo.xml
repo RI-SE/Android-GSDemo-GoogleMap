@@ -11,7 +11,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="50dp"
         android:orientation="horizontal"
         android:background="@color/cast_intro_overlay_background_color">
 
@@ -30,7 +30,7 @@
         <Button
             android:id="@+id/btn_drone_con"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:layout_gravity="center"
             android:paddingStart="6dp"
             android:paddingEnd="6dp"
@@ -43,7 +43,7 @@
         <Button
             android:id="@+id/btn_ip_address"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:layout_gravity="center"
             android:layout_marginStart="15dp"
             android:paddingStart="6dp"
@@ -57,7 +57,7 @@
         <Button
             android:id="@+id/btn_drone_state"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:layout_gravity="center"
             android:layout_marginStart="20dp"
             android:paddingStart="6dp"
@@ -67,10 +67,11 @@
             android:background="@android:color/holo_red_light"
             android:enabled="false"
             />
+
         <Button
             android:id="@+id/btn_atos_con"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:layout_gravity="center"
             android:layout_marginStart="20dp"
             android:paddingStart="6dp"
@@ -91,12 +92,9 @@
 
     <TextureView
         android:id="@+id/video_preview_surface"
-        android:layout_width="729dp"
-        android:layout_height="330dp"
-        android:layout_marginEnd="162dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:layout_width="640dp"
+        android:layout_height="360dp"
+        />
 
 
 
