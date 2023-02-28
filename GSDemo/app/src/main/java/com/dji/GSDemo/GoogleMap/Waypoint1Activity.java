@@ -575,7 +575,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
                         LatLng mpoint = new LatLng(waypointSettings.get(i).geo.y, waypointSettings.get(i).geo.x);
                         markWaypoint(mpoint);
                     }
-                    //deployTestCircle();
+//                    deployTestCircle();
                     deployTraj();
                 }
             });
