@@ -3,6 +3,7 @@ package com.dji.GSDemo.GoogleMap;
 
 import android.Manifest;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,6 +33,7 @@ import org.locationtech.proj4j.CoordinateTransformFactory;
 import org.locationtech.proj4j.ProjCoordinate;
 
 import java.util.ArrayList;
+import java.net.ResponseCache;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -434,33 +436,51 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         if (drone.getCurrentStateName().equals("Init") && lastDroneState != "Init") {
             Log.wtf("Error", "Init");
             lastDroneState = "Init";
+            updateStateButton(lastDroneState, Color.LTGRAY);
         } else if (drone.getCurrentStateName().equals("PreArming") && lastDroneState != "PreArming") {
             Log.wtf("Error", "PreArming");
             lastDroneState = "PreArming";
+            updateStateButton(lastDroneState, Color.GRAY);
+
         } else if (drone.getCurrentStateName().equals("Armed") && lastDroneState != "Armed") {
             Log.wtf("Error", "Armed");
             lastDroneState = "Armed";
         } else if (drone.getCurrentStateName().equals("Disarmed") && lastDroneState != "Disarmed") {
+
             Log.wtf("Error", "Disarmed");
             lastDroneState = "Disarmed";
+            updateStateButton(lastDroneState, Color.YELLOW);
         } else if (drone.getCurrentStateName().equals("PreRunning") && lastDroneState != "PreRunning") {
             Log.wtf("Error", "PreRunning");
             lastDroneState = "PreRunning";
+
+            updateStateButton(lastDroneState, Color.DKGRAY);
         } else if (drone.getCurrentStateName().equals("Running") && lastDroneState != "Running") {
             Log.wtf("Error", "Running");
             lastDroneState = "Running";
+            updateStateButton(lastDroneState, Color.RED);
         } else if (drone.getCurrentStateName().equals("NormalStop") && lastDroneState != "NormalStop") {
             setResultToToast("NormalStop");
             lastDroneState = "NormalStop";
+            updateStateButton(lastDroneState, Color.CYAN);
         } else if (drone.getCurrentStateName().equals("EmergencyStop") && lastDroneState != "EmergencyStop") {
             Log.wtf("Error", "EmergencyStop");
             lastDroneState = "EmergencyStop";
-
-
+            updateStateButton(lastDroneState, Color.BLACK);
         }
-
     }
 
+    private void updateStateButton(String state, Integer color) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(btn_drone_state != null) {
+                    btn_drone_state.setText("STATE: " + state);
+                    btn_drone_state.setBackgroundColor(color);
+                }
+            }
+        });
+    }
     class SendVirtualStickDataTask extends TimerTask {
         @Override
         public void run() {

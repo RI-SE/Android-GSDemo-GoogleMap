@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 
-def boostDirPath = "/home/victor/git/Boost-for-Android/build/out/arm64-v8a"
+def boostDirPath = "/home/globee/AndroidStudioProjects/Boost-for-Android/build/out/arm64-v8a"
 def boostLibPath = boostDirPath + "/lib/"
 def boostIncludePath  = boostDirPath + "/include/boost-1_78/"
 
