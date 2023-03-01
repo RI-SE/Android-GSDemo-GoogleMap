@@ -181,7 +181,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
         for(int i = 0; i < trajectory.size(); i ++){
             WaypointSetting wps = new WaypointSetting(coordCartToGeo(origin, new ProjCoordinate(trajectory.get(i).getPos().getXCoord_m(), trajectory.get(i).getPos().getYCoord_m(), trajectory.get(i).getPos().getZCoord_m())), new ProjCoordinate());
             this.waypointSettings.add(wps);
-            this.waypointSettings.get(i).heading = headingToYaw((180/Math.PI)*trajectory.get(i).getPos().getHeading_rad());
+            this.waypointSettings.get(i).heading = (int)yawToHeading((180/Math.PI)*trajectory.get(i).getPos().getHeading_rad());
             this.waypointSettings.get(i).geo.z = 11;//trajectory.get(i).getPos().getZCoord_m();
             this.waypointSettings.get(i).speed = (float)trajectory.get(i).getSpd().getLongitudinal_m_s(); //Possible lossy conversion?
 
@@ -208,7 +208,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
             if(headingTowardsCenter) {
                 currentAngleRot = rotateUnitCircleAngleToDroneYawRad(currentAngle, Math.PI);
             } else currentAngleRot = currentAngle;
-            wpHeading = yawToHeading((180/Math.PI)*currentAngleRot);
+            wpHeading = (int)yawToHeading((180/Math.PI)*currentAngleRot);
 
             WaypointSetting wps = new WaypointSetting(coordCartToGeo(origin, new ProjCoordinate(radius*Math.cos(currentAngle), radius*Math.sin(currentAngle), 0)), new ProjCoordinate());
             this.waypointSettings.add(wps);
@@ -239,21 +239,31 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
     }
 
     private double headingToYaw(double heading_deg){
-        return yawToHeading(heading_deg);
+        return wrapAngle360(90-heading_deg);
     }
 
     private double yawToHeading(double yaw_deg){
-        return wrapAngle(90-yaw_deg);
+        return wrapAngle180(90-yaw_deg);
     }
 
-    private double wrapAngle(double yaw_deg){
-        while (yaw < 0) {
-            yaw += 360;
+    private double wrapAngle360(double yaw_deg){
+        while (yaw_deg < 0) {
+            yaw_deg += 360;
         }
-        while (yaw > 360) {
-            yaw -= 360;
+        while (yaw_deg > 360) {
+            yaw_deg -= 360;
         }
-        return yaw;
+        return yaw_deg;
+    }
+
+    private double wrapAngle180(double yaw_deg){
+        while (yaw_deg < - 180) {
+            yaw_deg += 360;
+        }
+        while (yaw_deg > 180) {
+            yaw_deg -= 360;
+        }
+        return yaw_deg;
     }
 
 
@@ -376,7 +386,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
                     droneLocationLat = djiFlightControllerCurrentState.getAircraftLocation().getLatitude();
                     droneLocationLng = djiFlightControllerCurrentState.getAircraftLocation().getLongitude();
                     droneAltitude = djiFlightControllerCurrentState.getAircraftLocation().getAltitude();
-                    droneHeading = mFlightController.getCompass().getHeading();
+                    droneHeading = djiFlightControllerCurrentState.getAttitude().yaw;
                     updateDroneLocationData();
                 }
             });
@@ -491,6 +501,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
                 Double dist = Math.sqrt(Math.pow(currentLocation.x - firstPoint.x, 2) + Math.pow(currentLocation.y - firstPoint.y, 2));
                 Double anglelim = 10.0;
                 Double anglediff = Math.abs(droneHeading - waypointSettings.get(0).heading);
+
                 Button button = (Button)findViewById(R.id.pauseresume);
 
                 if (dist < radlim && anglediff < anglelim
@@ -502,7 +513,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
                 }
 
                 final StringBuffer positionStatusString = new StringBuffer();
-                positionStatusString.append("x=" + String.format("%.3f", pc.x) + " y=" + String.format("%.3f", pc.y) + " z=" + String.format("%.2f", droneAltitude));
+                positionStatusString.append("x=" + String.format("%.3f", currentLocation.x) + " y=" + String.format("%.3f", currentLocation.y) + " z=" + String.format("%.2f", droneAltitude));
                 //positionStatusString.append("x=" + pc.x);
                 //positionStatusString.append(" y=" + pc.y);
                 //positionStatusString.append(" z=" + pc.z);
@@ -546,7 +557,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
             monrPos.setIsZcoordValid(true);
             monrPos.setIsPositionValid(true);
 
-            monrPos.setHeading_rad(droneRot);
+            monrPos.setHeading_rad(headingToYaw(mFlightController.getState().getAttitude().yaw) * Math.PI/180);
             monrPos.setIsHeadingValid(true);
 
             drone.setPosition(monrPos);
@@ -582,7 +593,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
                 monrPos.setIsPositionValid(true);
 
                 setResultToToast("DroneRot: " + droneRot + " \nFlightCtrlRot: " + mFlightController.getCompass().getHeading());
-                monrPos.setHeading_rad(droneRot);
+                monrPos.setHeading_rad(headingToYaw(mFlightController.getState().getAttitude().yaw) * Math.PI/180);
                 monrPos.setIsHeadingValid(true);
                 drone.setPosition(monrPos);
 
