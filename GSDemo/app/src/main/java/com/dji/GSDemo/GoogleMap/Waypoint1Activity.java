@@ -774,6 +774,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
             wp.coordinate = new LocationCoordinate2D(this.waypointSettings.get(i).geo.y, this.waypointSettings.get(i).geo.x);
             wp.altitude = (float)this.waypointSettings.get(i).geo.z;
             wp.speed = (float)this.waypointSettings.get(i).speed;
+            wp.cornerRadiusInMeters = 1f;
             try {
                 wp.heading = this.waypointSettings.get(i).heading;
             } catch (Exception e){
