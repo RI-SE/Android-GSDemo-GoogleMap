@@ -471,27 +471,29 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
         //Create MarkerOptions object
         final MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(pos);
-        if(missionUploaded) {
-            ProjCoordinate pc = coordGeoToCart(startLatLong, new ProjCoordinate(droneLocationLat, droneLocationLng));
+        if (missionUploaded) {
+            ProjCoordinate currentLocation = coordGeoToCart(startLatLong, new ProjCoordinate(droneLocationLat, droneLocationLng));
 
             try {
                 //Mark the drone on map
-                mRot = Math.acos(pc.x / (Math.sqrt(Math.pow(pc.x, 2) + Math.pow(pc.y, 2))));
-                if((pc.x < 0 && pc.y < 0) || (pc.x > 0 && pc.y < 0)) {
+                mRot = Math.acos(currentLocation.x / (Math.sqrt(Math.pow(currentLocation.x, 2) + Math.pow(currentLocation.y, 2))));
+                if((currentLocation.x < 0 && currentLocation.y < 0) || (currentLocation.x > 0 && currentLocation.y < 0)) {
                     mRot = 2*Math.PI - mRot;
                 }
                 droneRot = mRot;
                 mRot = rotateUnitCircleAngleToNorthHeadingRad(mRot);
                 mRot = mRot * 180 / Math.PI;
                 markerOptions.rotation(mRot.floatValue()).icon(BitmapDescriptorFactory.fromResource(R.drawable.aircraft));;
+                
                 //Check waiting position, when reached wait for start/resume mission
-                ProjCoordinate fp = coordGeoToCart(startLatLong, new ProjCoordinate(waypointSettings.get(0).geo.y, waypointSettings.get(0).geo.x));
+                ProjCoordinate firstPoint = coordGeoToCart(startLatLong, new ProjCoordinate(waypointSettings.get(0).geo.y, waypointSettings.get(0).geo.x));
                 Double radlim = 0.5;
-                Double xlim = (radlim*Math.cos(0));
-                Double ylim =  (radlim*Math.sin(Math.PI/2));
+                Double dist = Math.sqrt(Math.pow(currentLocation.x - firstPoint.x, 2) + Math.pow(currentLocation.y - firstPoint.y, 2));
+                Double anglelim = 10.0;
+                Double anglediff = Math.abs(droneHeading - waypointSettings.get(0).heading);
                 Button button = (Button)findViewById(R.id.pauseresume);
 
-                if(pc.x > fp.x - xlim  &&  pc.x < fp.x + xlim && pc.y > fp.y - ylim  && pc.y < fp.y + ylim
+                if (dist < radlim && anglediff < anglelim
                         && drone.getCurrentStateName().equals("Armed") && !(button.getText().equals("Armed"))){
                     //&& button.getText().equals("Arming")
                    pauseWaypointMission();
