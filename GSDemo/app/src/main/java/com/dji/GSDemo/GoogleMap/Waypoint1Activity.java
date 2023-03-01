@@ -181,7 +181,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
         for(int i = 0; i < trajectory.size(); i ++){
             WaypointSetting wps = new WaypointSetting(coordCartToGeo(origin, new ProjCoordinate(trajectory.get(i).getPos().getXCoord_m(), trajectory.get(i).getPos().getYCoord_m(), trajectory.get(i).getPos().getZCoord_m())), new ProjCoordinate());
             this.waypointSettings.add(wps);
-            this.waypointSettings.get(i).heading = convertToDroneYawRangeDeg((180/Math.PI)*trajectory.get(i).getPos().getHeading_rad());
+            this.waypointSettings.get(i).heading = headingToYaw((180/Math.PI)*trajectory.get(i).getPos().getHeading_rad());
             this.waypointSettings.get(i).geo.z = 11;//trajectory.get(i).getPos().getZCoord_m();
             this.waypointSettings.get(i).speed = (float)trajectory.get(i).getSpd().getLongitudinal_m_s(); //Possible lossy conversion?
 
@@ -208,7 +208,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
             if(headingTowardsCenter) {
                 currentAngleRot = rotateUnitCircleAngleToDroneYawRad(currentAngle, Math.PI);
             } else currentAngleRot = currentAngle;
-            wpHeading = convertToDroneYawRangeDeg((180/Math.PI)*currentAngleRot);
+            wpHeading = yawToHeading((180/Math.PI)*currentAngleRot);
 
             WaypointSetting wps = new WaypointSetting(coordCartToGeo(origin, new ProjCoordinate(radius*Math.cos(currentAngle), radius*Math.sin(currentAngle), 0)), new ProjCoordinate());
             this.waypointSettings.add(wps);
@@ -238,13 +238,25 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
         return yawRot;
     }
 
-    private int convertToDroneYawRangeDeg(double yaw){
-        int droneYaw = 0;
-        if(yaw >= 0 && yaw <= 90) droneYaw = 90 - (int)(yaw);
-        else if(yaw > 90 && yaw < 270) droneYaw = (90 - (int) (yaw));
-        else if(yaw >= 270) droneYaw = ( 450 - (int)(yaw));
-        return droneYaw;
+    private double headingToYaw(double heading_deg){
+        return yawToHeading(heading_deg);
     }
+
+    private double yawToHeading(double yaw_deg){
+        return wrapAngle(90-yaw_deg);
+    }
+
+    private double wrapAngle(double yaw_deg){
+        while (yaw < 0) {
+            yaw += 360;
+        }
+        while (yaw > 360) {
+            yaw -= 360;
+        }
+        return yaw;
+    }
+
+
 
     private String buildOriginProjString(double latitude, double longitude){
         final StringBuffer stringBuffer = new StringBuffer();
