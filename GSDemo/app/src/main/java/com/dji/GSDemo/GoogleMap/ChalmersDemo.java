@@ -51,9 +51,11 @@ import dji.common.mission.waypoint.WaypointMission;
 import dji.common.mission.waypoint.WaypointMissionFinishedAction;
 import dji.common.mission.waypoint.WaypointMissionFlightPathMode;
 import dji.common.mission.waypoint.WaypointMissionHeadingMode;
+import dji.common.mission.waypoint.WaypointMissionState;
 import dji.common.model.LocationCoordinate2D;
 import dji.common.product.Model;
 import dji.common.util.CommonCallbacks;
+import dji.keysdk.FlightControllerKey;
 import dji.midware.data.model.P3.B;
 import dji.sdk.base.BaseComponent;
 import dji.sdk.base.BaseProduct;
@@ -94,6 +96,8 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     private float mGimbalYaw;
 
     private Button testcircle, config, upload, start, stop;
+
+    private Button land;
     private float mSpeed = 10.0f;
     private float altitude = 100.0f;
     private LatLng startLatLong;
@@ -105,7 +109,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     private ArrayList<Waypoint> waypointList = new ArrayList<>();
 
     private WaypointMissionOperator instance;
-    private WaypointMissionFinishedAction mFinishedAction = WaypointMissionFinishedAction.AUTO_LAND;
+    private WaypointMissionFinishedAction mFinishedAction = WaypointMissionFinishedAction.NO_ACTION;
     private WaypointMissionHeadingMode mHeadingMode = WaypointMissionHeadingMode.AUTO;
     private boolean missionUploaded = false;
 
@@ -188,6 +192,10 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 stopWaypointMission();
                 break;
             }
+            case R.id.land:{
+                stopWaypointMissionAndLand();
+                break;
+            }
             default:
                 break;
         }
@@ -243,6 +251,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         clear_wps = (Button) findViewById(R.id.clear_wps);
         start = (Button) findViewById(R.id.start);
         stop = (Button) findViewById(R.id.stop);
+        land = (Button) findViewById(R.id.land);
 
         testcircle.setOnClickListener(this);
         config.setOnClickListener(this);
@@ -563,7 +572,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             waypointMissionBuilder.waypointList(waypointList).waypointCount(waypointList.size());
         }
         setResultToToast("Number of waypoints " + this.waypointSettings.size());
-        mFinishedAction = WaypointMissionFinishedAction.NO_ACTION;
+        mFinishedAction = WaypointMissionFinishedAction.AUTO_LAND;
         mSpeed = 5.0f;
         mHeadingMode = WaypointMissionHeadingMode.USING_WAYPOINT_HEADING;
         altitude = (float)this.waypointSettings.get(0).geo.z;
@@ -733,6 +742,33 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             }
         });
 
+    }
+
+    private void stopWaypointMissionAndLand(){
+        getWaypointMissionOperator().stopMission(new CommonCallbacks.CompletionCallback() {
+            @Override
+            public void onResult(DJIError error) {
+                setResultToToast("Mission Stop: " + (error == null ? "Success" : error.getDescription()));
+            }
+        });
+
+        if (flightController != null){
+            flightController.startLanding(new CommonCallbacks.CompletionCallback() {
+                @Override
+                public void onResult(DJIError error) {
+                    setResultToToast("Landing: " + (error == null ? "Success" : error.getDescription()) );
+                }
+            });
+        }
+
+        if (flightController.getState().isLandingConfirmationNeeded()){
+            flightController.confirmLanding(new CommonCallbacks.CompletionCallback() {
+                @Override
+                public void onResult(DJIError error) {
+                    setResultToToast("Auto confirmation of landing: " + (error == null ? "Success" : error.getDescription()));
+                }
+            });
+        }
     }
     private ProjCoordinate coordGeoToCart(LatLng origin, ProjCoordinate llh){
         String projStr = buildOriginProjString(origin.latitude, origin.longitude);
