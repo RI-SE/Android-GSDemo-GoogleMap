@@ -204,41 +204,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         }
     }
 
-
-    public void landDrone() {
-
-    }
-
-    //    @Override
-    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        Log.e(TAG, "onSurfaceTextureAvailable");
-        if (mCodecManager == null) {
-            mCodecManager = new DJICodecManager(this, surface, width, height);
-        }
-    }
-
-    //    @Override
-    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-        Log.e(TAG, "onSurfaceTextureSizeChanged");
-    }
-
-    //    @Override
-    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-
-        Log.e(TAG, "onSurfaceTextureDestroyed");
-        if (mCodecManager != null) {
-            mCodecManager.cleanSurface();
-            mCodecManager = null;
-        }
-
-        return false;
-    }
-
-    //    @Override
-    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-    }
-
-
     private void initUI() {
 
         btn_atos_con = (Button) findViewById(R.id.btn_atos_con);
@@ -273,6 +238,39 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
         }
     }
+
+
+    //    @Override
+    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+        Log.e(TAG, "onSurfaceTextureAvailable");
+        if (mCodecManager == null) {
+            mCodecManager = new DJICodecManager(this, surface, width, height);
+        }
+    }
+
+    //    @Override
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+        Log.e(TAG, "onSurfaceTextureSizeChanged");
+    }
+
+    //    @Override
+    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+
+        Log.e(TAG, "onSurfaceTextureDestroyed");
+        if (mCodecManager != null) {
+            mCodecManager.cleanSurface();
+            mCodecManager = null;
+        }
+
+        return false;
+    }
+
+    //    @Override
+    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+    }
+
+
+
 
     private void changeGimbalAngles(float pitch, float yaw, float roll) {
         if (gimbal == null) return;
@@ -330,9 +328,9 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                     droneAltitude = djiFlightControllerCurrentState.getAircraftLocation().getAltitude();
 
 
-//                    text_gps.setText("GPS Level: " + gps.toString());
-//                    text_lat.setText("LAT: " + droneLocationLat);
-//                    text_lon.setText("LON: " + droneLocationLng);
+                    text_gps.setText("GPS Level: " + gps.toString());
+                    text_lat.setText("LAT: " + droneLocationLat);
+                    text_lon.setText("LON: " + droneLocationLng);
 
                     Log.wtf("LOCATION GPS", String.valueOf(gps));
                     Log.wtf("LOCATION LAT", String.valueOf(droneLocationLat));
