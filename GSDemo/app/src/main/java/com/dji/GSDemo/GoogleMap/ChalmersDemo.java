@@ -87,7 +87,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     private Gimbal gimbal;
     private Button btn_atos_con, btn_drone_con, btn_ip_address, btn_drone_state, clear_wps;
 
-    private TextView text_gps, text_lat, text_lon;
+    private TextView text_gps, text_lat, text_lon, text_alt;
     private CommonCallbacks.CompletionCallback callback;
     private float mPitch;
     private float mRoll;
@@ -122,6 +122,10 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
     public double getDroneLocationLng() {
         return droneLocationLng;
+    }
+
+    public double getDroneAltitude() {
+        return droneAltitude;
     }
 
     @Override
@@ -182,13 +186,11 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 break;
             }
             case R.id.clear_wps:{
-                //Add land
-//                Button button = (Button)findViewById(R.id.clear_wps);
                 waypointList.clear();
                 break;
             }
             case R.id.start:{
-                resumeWaypointMission();
+                startWaypointMission();
                 break;
             }
             case R.id.stop:{
@@ -217,6 +219,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         text_gps = (TextView) findViewById(R.id.text_gps);
         text_lat = (TextView) findViewById(R.id.text_lat);
         text_lon = (TextView) findViewById(R.id.text_lon);
+        text_alt = (TextView) findViewById(R.id.text_alt);
 
         testcircle = (Button) findViewById(R.id.testcircle);
         config = (Button) findViewById(R.id.pauseresume);
@@ -317,7 +320,13 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         }
 
         if (flightController != null) {
-            flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
+//            flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
+            flightController.setHomeLocationUsingAircraftCurrentLocation(new CommonCallbacks.CompletionCallback() {
+                @Override
+                public void onResult(DJIError error) {
+                    setResultToToast("Set drone home at take off site: " + (error == null ? "Success" : error.getDescription()));
+                }
+            });
             flightController.setStateCallback(new FlightControllerState.Callback() {
 
                 @Override
@@ -328,10 +337,18 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                     droneAltitude = djiFlightControllerCurrentState.getAircraftLocation().getAltitude();
 
 
-                    text_gps.setText("GPS Level: " + gps.toString());
-                    text_lat.setText("LAT: " + droneLocationLat);
-                    text_lon.setText("LON: " + droneLocationLng);
-
+                    if (text_lon != null && text_lat != null && text_gps != null && text_alt != null) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                              text_gps.setText("GPS: " + gps.toString());
+                              text_lat.setText("LAT: " + (!Double.isNaN(droneLocationLat) ? String.valueOf(droneLocationLat) : "Unknown"));
+                              text_lon.setText("LONG: " + (!Double.isNaN(droneLocationLng) ? String.valueOf(droneLocationLng) : "Unknown"));
+                              text_alt.setText("ALT: " + (!Double.isNaN(droneAltitude) ? String.valueOf(droneAltitude) : "Unknown"));
+                            }
+                        });
+//
+                    }
                     Log.wtf("LOCATION GPS", String.valueOf(gps));
                     Log.wtf("LOCATION LAT", String.valueOf(droneLocationLat));
                     Log.wtf("LOCATION LONG", String.valueOf(droneLocationLng));
@@ -705,7 +722,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 if (error == null) {
                     setResultToToast("Mission upload successfully!");
                     missionUploaded = true;
-                    startWaypointMission();
+//                    startWaypointMission();
 
                 } else {
                     missionUploaded = false;
@@ -717,13 +734,22 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
     }
 
-    private void startWaypointMission(){
-        getWaypointMissionOperator().startMission(new CommonCallbacks.CompletionCallback() {
-            @Override
-            public void onResult(DJIError error) {
-                setResultToToast("Mission Start: " + (error == null ? "Successfully" : error.getDescription()));
-            }
-        });
+    private void startWaypointMission() {
+        if (flightController != null) {
+//            flightController.setHomeLocationUsingAircraftCurrentLocation(new CommonCallbacks.CompletionCallback() {
+//                @Override
+//                public void onResult(DJIError error) {
+//                    setResultToToast("Set drone home at take off site: " + (error == null ? "Success" : error.getDescription()));
+//                }
+//            });
+
+            getWaypointMissionOperator().startMission(new CommonCallbacks.CompletionCallback() {
+                @Override
+                public void onResult(DJIError error) {
+                    setResultToToast("Mission Start: " + (error == null ? "Successfully" : error.getDescription()));
+                }
+            });
+        }
     }
 
     private void pauseWaypointMission(){
@@ -763,22 +789,34 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             }
         });
 
-        if (flightController != null){
-            flightController.startLanding(new CommonCallbacks.CompletionCallback() {
-                @Override
-                public void onResult(DJIError error) {
-                    setResultToToast("Landing: " + (error == null ? "Success" : error.getDescription()) );
-                }
-            });
-        }
+        if (flightController != null) {
+        flightController.startGoHome(new CommonCallbacks.CompletionCallback() {
+             @Override
+             public void onResult(DJIError error) {
+                 if (error == null) {
+                     setResultToToast("Going to home location.");
 
-        if (flightController.getState().isLandingConfirmationNeeded()){
-            flightController.confirmLanding(new CommonCallbacks.CompletionCallback() {
-                @Override
-                public void onResult(DJIError error) {
-                    setResultToToast("Auto confirmation of landing: " + (error == null ? "Success" : error.getDescription()));
-                }
-            });
+                 } else {
+                     setResultToToast("Going home failed: " + (error.getDescription()));
+                 }
+             }
+     });
+
+
+//
+//            if (flightController.getState().isLandingConfirmationNeeded()){
+//                flightController.confirmLanding(new CommonCallbacks.CompletionCallback() {
+//                    @Override
+//                    public void onResult(DJIError error) {
+//                        if (error == null) {
+//                            setResultToToast("Landing conformation was successful!");
+//                        } else {
+//                            setResultToToast("Landing confirmation failed, error: " + error.getDescription() + "...");
+//
+//                        }
+//                    }
+//                });
+//            }
         }
     }
     private ProjCoordinate coordGeoToCart(LatLng origin, ProjCoordinate llh){
