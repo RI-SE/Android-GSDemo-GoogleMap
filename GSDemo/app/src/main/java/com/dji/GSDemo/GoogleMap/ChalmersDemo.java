@@ -2,6 +2,7 @@ package com.dji.GSDemo.GoogleMap;
 
 
 import android.Manifest;
+import android.app.ActionBar;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.SurfaceTexture;
@@ -54,6 +55,7 @@ import dji.common.model.LocationCoordinate2D;
 import dji.common.product.Model;
 import dji.common.util.CommonCallbacks;
 import dji.midware.data.model.P3.B;
+import dji.sdk.base.BaseComponent;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.camera.Camera;
 import dji.sdk.camera.VideoFeeder;
@@ -62,6 +64,7 @@ import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.gimbal.Gimbal;
 import dji.sdk.mission.waypoint.WaypointMissionOperator;
 import dji.sdk.products.Aircraft;
+import dji.sdk.sdkmanager.DJISDKInitEvent;
 import dji.sdk.sdkmanager.DJISDKManager;
 
 public class ChalmersDemo extends FragmentActivity implements TextureView.SurfaceTextureListener, View.OnClickListener {
@@ -70,6 +73,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     protected VideoFeeder.VideoDataListener mReceivedVideoDataListener = null;
     TextureView mVideoSurface;
     Timer mGimbalTaskTimer;
+    View decorView;
     private FlightController flightController;
     private FlightControllerState djiFlightControllerCurrentState;
     private Timer mSendVirtualStickDataTimer;
@@ -78,7 +82,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     private IsoDrone drone;
     private double droneLocationLat = 57.688859d, droneLocationLng = 11.978795d, droneAltitude = 0d; // Johanneberg
     private Gimbal gimbal;
-    private Button btn_atos_con, btn_drone_con, btn_ip_address, btn_drone_state;
+    private Button btn_atos_con, btn_drone_con, btn_ip_address, btn_drone_state, clear_wps;
     private CommonCallbacks.CompletionCallback callback;
     private float mPitch;
     private float mRoll;
@@ -101,7 +105,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     private ArrayList<Waypoint> waypointList = new ArrayList<>();
 
     private WaypointMissionOperator instance;
-    private WaypointMissionFinishedAction mFinishedAction = WaypointMissionFinishedAction.NO_ACTION;
+    private WaypointMissionFinishedAction mFinishedAction = WaypointMissionFinishedAction.AUTO_LAND;
     private WaypointMissionHeadingMode mHeadingMode = WaypointMissionHeadingMode.AUTO;
     private boolean missionUploaded = false;
 
@@ -152,7 +156,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         switch (v.getId()) {
             case R.id.testcircle:{
                 this.waypointSettings.clear();
-                generateTestCircleCoordinates(new LatLng(droneLocationLat, droneLocationLng), 1, 1.5f, 1,15, true);
+                generateTestCircleCoordinates(new LatLng(droneLocationLat, droneLocationLng), 1, 1.5f, 1,8, true);
                 deployTraj();
                 break;
             }
@@ -170,10 +174,10 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 }
                 break;
             }
-            case R.id.arm:{
-                startWaypointMission();
-                Button button = (Button)findViewById(R.id.pauseresume);
-                button.setText("Arming");
+            case R.id.clear_wps:{
+                //Add land
+//                Button button = (Button)findViewById(R.id.clear_wps);
+                waypointList.clear();
                 break;
             }
             case R.id.start:{
@@ -189,6 +193,10 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         }
     }
 
+
+    public void landDrone() {
+
+    }
 
     //    @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
@@ -232,13 +240,13 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
         testcircle = (Button) findViewById(R.id.testcircle);
         config = (Button) findViewById(R.id.pauseresume);
-        upload = (Button) findViewById(R.id.arm);
+        clear_wps = (Button) findViewById(R.id.clear_wps);
         start = (Button) findViewById(R.id.start);
         stop = (Button) findViewById(R.id.stop);
 
         testcircle.setOnClickListener(this);
         config.setOnClickListener(this);
-        upload.setOnClickListener(this);
+        clear_wps.setOnClickListener(this);
         start.setOnClickListener(this);
         stop.setOnClickListener(this);
 
@@ -284,6 +292,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         });
     }
 
+
     private void initFlightController() {
 
         BaseProduct product = DJIDemoApplication.getProductInstance();
@@ -303,11 +312,11 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                     droneLocationLat = djiFlightControllerCurrentState.getAircraftLocation().getLatitude();
                     droneLocationLng = djiFlightControllerCurrentState.getAircraftLocation().getLongitude();
                     droneAltitude = djiFlightControllerCurrentState.getAircraftLocation().getAltitude();
-                    updateDroneLocationData();
                     Log.wtf("LOCATION GPS", String.valueOf(gps));
                     Log.wtf("LOCATION LAT", String.valueOf(droneLocationLat));
                     Log.wtf("LOCATION LONG", String.valueOf(droneLocationLng));
                     Log.wtf("LOCATION ALT", String.valueOf(droneAltitude));
+                    updateDroneLocationData();
                 }
             });
         }
@@ -325,6 +334,18 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        decorView = getWindow().getDecorView();
+        decorView.setOnSystemUiVisibilityChangeListener
+                (new View.OnSystemUiVisibilityChangeListener() {
+                    @Override
+                    public void onSystemUiVisibilityChange(int visibility) {
+                        if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                            int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+                            decorView.setSystemUiVisibility(uiOptions);
+                        }
+                    }
+                });
+
         initFlightController();
         initCameraGimbal();
 
@@ -373,8 +394,10 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         BaseProduct product = DJIDemoApplication.getProductInstance();
 
         if (product == null || !product.isConnected()) {
+            btn_drone_con.setBackgroundColor(Color.RED);
             setResultToToast(getString(R.string.disconnected));
         } else {
+            btn_drone_con.setBackgroundColor(Color.GREEN);
             if (null != mVideoSurface) {
                 mVideoSurface.setSurfaceTextureListener(this);
             }
@@ -727,5 +750,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 //        stringBuffer.append("+proj=tmerc +lat_0=" + latitude + " +lon_0=" + longitude + " +k=0.9996 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs");
 //        return stringBuffer.toString();
 //    }
+
+
 
 }
