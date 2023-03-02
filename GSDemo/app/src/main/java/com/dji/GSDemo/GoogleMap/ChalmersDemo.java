@@ -13,6 +13,7 @@ import android.view.MotionEvent;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -83,6 +84,8 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     private double droneLocationLat = 57.688859d, droneLocationLng = 11.978795d, droneAltitude = 0d; // Johanneberg
     private Gimbal gimbal;
     private Button btn_atos_con, btn_drone_con, btn_ip_address, btn_drone_state, clear_wps;
+
+    private TextView text_gps, text_lat, text_lon;
     private CommonCallbacks.CompletionCallback callback;
     private float mPitch;
     private float mRoll;
@@ -238,6 +241,10 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         btn_ip_address.setText(Utils.getIPAddress(true));
         btn_drone_state.setText("State: Undefined");
 
+        text_gps = (TextView) findViewById(R.id.text_gps);
+        text_lat = (TextView) findViewById(R.id.text_lat);
+        text_lon = (TextView) findViewById(R.id.text_lon);
+
         testcircle = (Button) findViewById(R.id.testcircle);
         config = (Button) findViewById(R.id.pauseresume);
         clear_wps = (Button) findViewById(R.id.clear_wps);
@@ -312,6 +319,12 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                     droneLocationLat = djiFlightControllerCurrentState.getAircraftLocation().getLatitude();
                     droneLocationLng = djiFlightControllerCurrentState.getAircraftLocation().getLongitude();
                     droneAltitude = djiFlightControllerCurrentState.getAircraftLocation().getAltitude();
+
+
+//                    text_gps.setText("GPS Level: " + gps.toString());
+//                    text_lat.setText("LAT: " + droneLocationLat);
+//                    text_lon.setText("LON: " + droneLocationLng);
+
                     Log.wtf("LOCATION GPS", String.valueOf(gps));
                     Log.wtf("LOCATION LAT", String.valueOf(droneLocationLat));
                     Log.wtf("LOCATION LONG", String.valueOf(droneLocationLng));
