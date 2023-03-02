@@ -46,6 +46,7 @@ import dji.common.mission.waypoint.WaypointMissionFinishedAction;
 import dji.common.mission.waypoint.WaypointMissionFlightPathMode;
 import dji.common.mission.waypoint.WaypointMissionHeadingMode;
 import dji.common.mission.waypoint.WaypointMissionUploadEvent;
+import dji.common.mission.waypoint.WaypointTurnMode;
 import dji.common.model.LocationCoordinate2D;
 import dji.common.useraccount.UserAccountState;
 import dji.common.util.CommonCallbacks;
@@ -182,17 +183,17 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
             WaypointSetting wps = new WaypointSetting(coordCartToGeo(origin, new ProjCoordinate(trajectory.get(i).getPos().getXCoord_m(), trajectory.get(i).getPos().getYCoord_m(), trajectory.get(i).getPos().getZCoord_m())), new ProjCoordinate());
             this.waypointSettings.add(wps);
             this.waypointSettings.get(i).heading = (int)yawToHeading((180/Math.PI)*trajectory.get(i).getPos().getHeading_rad());
-            this.waypointSettings.get(i).geo.z = 11;//trajectory.get(i).getPos().getZCoord_m();
+            this.waypointSettings.get(i).geo.z = 4;//trajectory.get(i).getPos().getZCoord_m();
             this.waypointSettings.get(i).speed = (float)trajectory.get(i).getSpd().getLongitudinal_m_s(); //Possible lossy conversion?
 
         }
 
         //add landing point
-        WaypointSetting wps = new WaypointSetting(coordCartToGeo(origin, new ProjCoordinate(0, 0)), new ProjCoordinate());
-        wps.heading = 0;
-        wps.speed = 15;
-        wps.geo.z = 11;
-        this.waypointSettings.add(wps);
+       // WaypointSetting wps = new WaypointSetting(coordCartToGeo(origin, new ProjCoordinate(0, 0)), new ProjCoordinate());
+       // wps.heading = 0;
+       // wps.speed = 15;
+       // wps.geo.z = 6;
+       // this.waypointSettings.add(wps);
     }
 
 
@@ -539,28 +540,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
         //Log.wtf("alt: ", String.valueOf(drone.getOrigin().getAltitude_m()));
 
         if (drone.getCurrentStateName().equals("Armed") || (drone.getCurrentStateName().equals("Running"))) {
-
-            double isoLat = drone.getOrigin().getLatitude_deg();
-            double isoLog = drone.getOrigin().getLongitude_deg();
-
-            LatLng isoOrigin = new LatLng(isoLat, isoLog);
-
-            ProjCoordinate dronePosition = new ProjCoordinate(droneLocationLat, droneLocationLng);
-            ProjCoordinate result = coordGeoToCart(isoOrigin, dronePosition);
-
-            CartesianPosition monrPos = new CartesianPosition();
-            monrPos.setXCoord_m(result.x);
-            monrPos.setYCoord_m(result.y);
-            monrPos.setZCoord_m(droneAltitude);
-            monrPos.setIsXcoordValid(true);
-            monrPos.setIsYcoordValid(true);
-            monrPos.setIsZcoordValid(true);
-            monrPos.setIsPositionValid(true);
-
-            monrPos.setHeading_rad(headingToYaw(mFlightController.getState().getAttitude().yaw) * Math.PI/180);
-            monrPos.setIsHeadingValid(true);
-
-            drone.setPosition(monrPos);
+            sendMonr();
         }
 
         if (drone.getCurrentStateName().equals("Init") && lastDroneState != "Init") {
@@ -575,27 +555,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
         }else if (drone.getCurrentStateName().equals("Disarmed")) {
                 Log.wtf("Error", "Disarmed");
                 lastDroneState = "Disarmed";
-                double isoLat = drone.getOrigin().getLatitude_deg();
-                double isoLog = drone.getOrigin().getLongitude_deg();
-
-                LatLng isoOrigin = new LatLng(isoLat, isoLog);
-
-                ProjCoordinate dronePosition = new ProjCoordinate(droneLocationLat, droneLocationLng);
-                ProjCoordinate result = coordGeoToCart(isoOrigin, dronePosition);
-
-                CartesianPosition monrPos = new CartesianPosition();
-                monrPos.setXCoord_m(result.x);
-                monrPos.setYCoord_m(result.y);
-                monrPos.setZCoord_m(droneAltitude);
-                monrPos.setIsXcoordValid(true);
-                monrPos.setIsYcoordValid(true);
-                monrPos.setIsZcoordValid(true);
-                monrPos.setIsPositionValid(true);
-
-                setResultToToast("DroneRot: " + droneRot + " \nFlightCtrlRot: " + mFlightController.getCompass().getHeading());
-                monrPos.setHeading_rad(headingToYaw(mFlightController.getState().getAttitude().yaw) * Math.PI/180);
-                monrPos.setIsHeadingValid(true);
-                drone.setPosition(monrPos);
+                sendMonr();
 
 
         } else if (drone.getCurrentStateName().equals("Armed") && lastDroneState != "Armed") {
@@ -646,27 +606,6 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
                 }
             });
 
-
-
-
-
-
-            /*
-            //Test circle
-            runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            waypointSettings.clear();
-                            generateTestCircleCoordinates(new LatLng(droneLocationLat, droneLocationLng), 10, 3, 1,19, true);
-                            for(int i = 0; i < waypointSettings.size(); i ++){
-                                LatLng mpoint = new LatLng(waypointSettings.get(i).geo.y, waypointSettings.get(i).geo.x);
-                                markWaypoint(mpoint);
-                            }
-                    deployTestCircle();
-
-                }
-            });
-            */
             Log.wtf("Error", "Armed");
             lastDroneState = "Armed";
         } else if (drone.getCurrentStateName().equals("Disarmed") && lastDroneState != "Disarmed") {
@@ -774,7 +713,8 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
             wp.coordinate = new LocationCoordinate2D(this.waypointSettings.get(i).geo.y, this.waypointSettings.get(i).geo.x);
             wp.altitude = (float)this.waypointSettings.get(i).geo.z;
             wp.speed = (float)this.waypointSettings.get(i).speed;
-            wp.cornerRadiusInMeters = 1f;
+            //wp.cornerRadiusInMeters = 0.2f;
+            wp.turnMode = WaypointTurnMode.CLOCKWISE;
             try {
                 wp.heading = this.waypointSettings.get(i).heading;
             } catch (Exception e){
@@ -1091,6 +1031,30 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
         LatLng astazero = new LatLng(57.777521, 12.781442);
         gMap.addMarker(new MarkerOptions().position(astazero).title("Marker at AstaZero"));
         cameraUpdate(); // Locate the drone's place
+    }
+
+    public void sendMonr(){
+        double isoLat = drone.getOrigin().getLatitude_deg();
+        double isoLog = drone.getOrigin().getLongitude_deg();
+
+        LatLng isoOrigin = new LatLng(isoLat, isoLog);
+
+        ProjCoordinate dronePosition = new ProjCoordinate(droneLocationLat, droneLocationLng);
+        ProjCoordinate result = coordGeoToCart(isoOrigin, dronePosition);
+
+        CartesianPosition monrPos = new CartesianPosition();
+        monrPos.setXCoord_m(result.x);
+        monrPos.setYCoord_m(result.y);
+        monrPos.setZCoord_m(droneAltitude);
+        monrPos.setIsXcoordValid(true);
+        monrPos.setIsYcoordValid(true);
+        monrPos.setIsZcoordValid(true);
+        monrPos.setIsPositionValid(true);
+
+        monrPos.setHeading_rad(headingToYaw(mFlightController.getState().getAttitude().yaw) * Math.PI/180);
+        monrPos.setIsHeadingValid(true);
+        drone.setPosition(monrPos);
+
     }
 
 }
