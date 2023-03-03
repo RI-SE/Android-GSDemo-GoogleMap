@@ -445,6 +445,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
 
     private void setUpMap() {
         gMap.setOnMapClickListener(this);// add the listener for click for amap object
+        gMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
 
     }
 
