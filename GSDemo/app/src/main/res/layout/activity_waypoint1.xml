@@ -88,8 +88,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/linearLayout3"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:layout_editor_absoluteY="76dp">
+        android:layout_height="wrap_content">
 
         <Button
             android:id="@+id/pauseresume"
@@ -134,12 +133,17 @@
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/pauseresume"
             app:layout_constraintTop_toTopOf="@+id/pauseresume" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <fragment
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/map"
         class="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
 </LinearLayout>
+
+    <!--
+   </LinearLayout>
+       !-->
