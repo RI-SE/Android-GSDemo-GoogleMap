@@ -1,0 +1,19 @@
+# ninja log v5
+0	8	1678351398	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-mkdir	93268c126e235075
+8	3389	1678351402	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-download	b95171d83686c8a1
+3389	5008	0	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-update	cfb8b1ee621aa27c
+5008	5012	1678351403	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-patch	c16a8e770e69d08
+5012	5017	1678351403	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-configure	c124f6e5c08a174a
+5017	5023	1678351403	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-build	a09998c6adb0a93e
+5023	5029	1678351403	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-install	e667211e72650c54
+5029	5035	1678351403	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-test	8e64efd8be35d50
+5035	5042	1678351403	CMakeFiles/googletest-populate-complete	3c234e29bf4fa993
+5035	5042	1678351403	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-done	3c234e29bf4fa993
+0	1547	0	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-update	cfb8b1ee621aa27c
+1547	1554	1678351883	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-patch	c16a8e770e69d08
+1554	1560	1678351883	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-configure	c124f6e5c08a174a
+1560	1565	1678351883	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-build	a09998c6adb0a93e
+1565	1572	1678351883	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-install	e667211e72650c54
+1572	1577	1678351883	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-test	8e64efd8be35d50
+1577	1586	1678351883	CMakeFiles/googletest-populate-complete	3c234e29bf4fa993
+1577	1586	1678351883	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-done	3c234e29bf4fa993

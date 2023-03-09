@@ -59,12 +59,22 @@ import dji.sdk.sdkmanager.DJISDKManager;
 import dji.sdk.useraccount.UserAccountManager;
 
 
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.DecompositionSolver;
+import org.apache.commons.math3.linear.DiagonalMatrix;
+import org.apache.commons.math3.linear.LUDecomposition;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.asta.isoObject.*;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.CoordinateTransform;
 import org.locationtech.proj4j.CoordinateTransformFactory;
 import org.locationtech.proj4j.ProjCoordinate;
+
+import org.apache.commons.math3.*;
+
 
 public class Waypoint1Activity extends FragmentActivity implements View.OnClickListener, GoogleMap.OnMapClickListener, OnMapReadyCallback {
 
@@ -179,13 +189,31 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
 
         //Add extra point before first point to correct heading
         //add trajPoints
+        RealMatrix A = MatrixUtils.createRealMatrix(trajectory.size(), trajectory.size());
+        ArrayRealVector b = new ArrayRealVector(trajectory.size());
+        for (int i = 0; i < trajectory.size(); ++i) {
+            A.setEntry(i,i,1);
+            if (i+1 < trajectory.size() ) {
+                A.setEntry(i,i+1,1);
+                Double dist = Math.sqrt(
+                        Math.pow(trajectory.get(i).getPos().getXCoord_m() - trajectory.get(i+1).getPos().getXCoord_m(), 2)
+                                + Math.pow(trajectory.get(i).getPos().getYCoord_m() - trajectory.get(i+1).getPos().getYCoord_m(), 2));
+                b.setEntry(i, dist);
+            }
+            else {
+                b.setEntry(i,0.2);
+            }
+        }
+        DecompositionSolver solver = new LUDecomposition(A).getSolver();
+        RealVector radii = solver.solve(b);
+
         for(int i = 0; i < trajectory.size(); i ++){
             WaypointSetting wps = new WaypointSetting(coordCartToGeo(origin, new ProjCoordinate(trajectory.get(i).getPos().getXCoord_m(), trajectory.get(i).getPos().getYCoord_m(), trajectory.get(i).getPos().getZCoord_m())), new ProjCoordinate());
             this.waypointSettings.add(wps);
             this.waypointSettings.get(i).heading = (int)yawToHeading((180/Math.PI)*trajectory.get(i).getPos().getHeading_rad());
             this.waypointSettings.get(i).geo.z = 4;//trajectory.get(i).getPos().getZCoord_m();
             this.waypointSettings.get(i).speed = (float)trajectory.get(i).getSpd().getLongitudinal_m_s(); //Possible lossy conversion?
-
+            this.waypointSettings.get(i).radius = radii.getEntry(i) -0.01;
         }
 
         //add landing point
@@ -495,11 +523,11 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
                 droneRot = mRot;
                 mRot = rotateUnitCircleAngleToNorthHeadingRad(mRot);
                 mRot = mRot * 180 / Math.PI;
-                markerOptions.rotation(mRot.floatValue()).icon(BitmapDescriptorFactory.fromResource(R.drawable.aircraft));;
-                
+                markerOptions.rotation((float)mFlightController.getState().getAttitude().yaw).icon(BitmapDescriptorFactory.fromResource(R.drawable.aircraft));;
+
                 //Check waiting position, when reached wait for start/resume mission
                 ProjCoordinate firstPoint = coordGeoToCart(startLatLong, new ProjCoordinate(waypointSettings.get(0).geo.y, waypointSettings.get(0).geo.x));
-                Double radlim = 0.5;
+                Double radlim = 1.0;
                 Double dist = Math.sqrt(Math.pow(currentLocation.x - firstPoint.x, 2) + Math.pow(currentLocation.y - firstPoint.y, 2));
                 Double anglelim = 10.0;
                 Double anglediff = Math.abs(droneHeading - waypointSettings.get(0).heading);
@@ -507,7 +535,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
                 Button button = (Button)findViewById(R.id.pauseresume);
 
                 if (dist < radlim && anglediff < anglelim
-                        && drone.getCurrentStateName().equals("Armed") && !(button.getText().equals("Armed"))){
+                        && drone.getCurrentStateName().equals("Armed")){
                     //&& button.getText().equals("Arming")
                    pauseWaypointMission();
                    button.setText("Armed");
@@ -714,8 +742,13 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
             wp.coordinate = new LocationCoordinate2D(this.waypointSettings.get(i).geo.y, this.waypointSettings.get(i).geo.x);
             wp.altitude = (float)this.waypointSettings.get(i).geo.z;
             wp.speed = (float)this.waypointSettings.get(i).speed;
-            //wp.cornerRadiusInMeters = 0.2f;
-            wp.turnMode = WaypointTurnMode.CLOCKWISE;
+            wp.cornerRadiusInMeters = 2.2f; //(float)this.waypointSettings.get(i).radius;
+
+            if (i+1 < this.waypointSettings.size()) {
+                int angular_velocity = this.waypointSettings.get(i+1).heading - this.waypointSettings.get(i).heading; // Ugly approximation of velocity
+                wp.turnMode = angular_velocity > 0 ? WaypointTurnMode.CLOCKWISE : WaypointTurnMode.COUNTER_CLOCKWISE;
+            }
+
             try {
                 wp.heading = this.waypointSettings.get(i).heading;
             } catch (Exception e){
@@ -961,6 +994,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
     }
 
     private void uploadWayPointMission(){
+        setResultToToast("Waypoint operator state was: " + getWaypointMissionOperator().getCurrentState());
 
         getWaypointMissionOperator().uploadMission(new CommonCallbacks.CompletionCallback() {
             @Override
@@ -973,6 +1007,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
                 } else {
                     missionUploaded = false;
                     setResultToToast("Mission upload failed, error: " + error.getDescription() + " retrying...");
+                    setResultToToast("Waypoint operator state was: " + getWaypointMissionOperator().getCurrentState());
                     getWaypointMissionOperator().retryUploadMission(null);
                 }
             }

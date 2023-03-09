@@ -11,6 +11,7 @@ public class WaypointSetting {
     public ProjCoordinate poi;
     public int heading;
     public float speed;
+    public double radius;
 
     public WaypointSetting(ProjCoordinate geollh, ProjCoordinate poiXyz)
     {
