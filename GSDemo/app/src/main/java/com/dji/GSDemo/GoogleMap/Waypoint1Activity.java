@@ -1,5 +1,11 @@
 package com.dji.GSDemo.GoogleMap;
 
+import static dji.common.mission.MissionState.READY_TO_RETRY_UPLOAD;
+import static dji.common.mission.waypoint.WaypointMissionState.EXECUTING;
+import static dji.common.mission.waypoint.WaypointMissionState.EXECUTION_PAUSED;
+import static dji.common.mission.waypoint.WaypointMissionState.READY_TO_EXECUTE;
+import static dji.common.mission.waypoint.WaypointMissionState.READY_TO_UPLOAD;
+
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -12,11 +18,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
@@ -122,9 +130,15 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
 
     private Double mRot = 0.0;
     private boolean missionUploaded = false;
+    private WaypointMissionOperatorListener listener;
 
     public double getDroneLocationLat(){return droneLocationLat;}
     public double getDroneLocationLng(){return droneLocationLng;}
+
+    @Override
+    public void onAttachedToWindow() {
+        setUpListener();
+    }
 
     @Override
     protected void onResume(){
@@ -182,7 +196,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
         start.setOnClickListener(this);
         stop.setOnClickListener(this);
 
-        add.setEnabled(false);;
+        add.setEnabled(false);
     }
 
     private void generateWaypointsFromTraj(LatLng origin, TrajectoryWaypointVector trajectory){
@@ -207,11 +221,15 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
         DecompositionSolver solver = new LUDecomposition(A).getSolver();
         RealVector radii = solver.solve(b);
 
+        //Get altitude from GUI
+        EditText zAltitude   = (EditText)findViewById(R.id.zAltitude);
+        zAltitude.getText();
+
         for(int i = 0; i < trajectory.size(); i ++){
             WaypointSetting wps = new WaypointSetting(coordCartToGeo(origin, new ProjCoordinate(trajectory.get(i).getPos().getXCoord_m(), trajectory.get(i).getPos().getYCoord_m(), trajectory.get(i).getPos().getZCoord_m())), new ProjCoordinate());
             this.waypointSettings.add(wps);
             this.waypointSettings.get(i).heading = (int)yawToHeading((180/Math.PI)*trajectory.get(i).getPos().getHeading_rad());
-            this.waypointSettings.get(i).geo.z = 4;//trajectory.get(i).getPos().getZCoord_m();
+            this.waypointSettings.get(i).geo.z = Double.parseDouble(zAltitude.getText().toString());//trajectory.get(i).getPos().getZCoord_m();
             this.waypointSettings.get(i).speed = (float)trajectory.get(i).getSpd().getLongitudinal_m_s(); //Possible lossy conversion?
             this.waypointSettings.get(i).radius = radii.getEntry(i) -0.01;
         }
@@ -458,7 +476,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
 
         @Override
         public void onExecutionFinish(@Nullable final DJIError error) {
-            setResultToToast("Execution finished: " + (error == null ? "Success!" : error.getDescription()));
+
         }
     };
 
@@ -597,6 +615,9 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
                 @Override
                 public void run() {
 
+                    EditText distance   = (EditText)findViewById(R.id.reduction);
+                    drone.setMaxDistancePoints(Double.parseDouble(distance.getText().toString()));
+
                     Log.wtf("TrajName: ", drone.getTrajectoryHeader().getTrajectoryName());
                     TrajectoryWaypointVector traj =  drone.getTrajectory();
                     waypointSettings.clear();
@@ -727,13 +748,19 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
         altitude = (float)this.waypointSettings.get(0).geo.z;
         configWayPointMission();
         startLatLong = new LatLng(droneLocationLat, droneLocationLng);
-        uploadWayPointMission();
+
+
+
+
     }
 
 
     private void deployTraj(){
 
         Log.wtf("Error", "Deploying traj");
+
+        //Get altitude from GUI
+        EditText turnRad   = (EditText)findViewById(R.id.turnRad);
 
         waypointMissionBuilder = new WaypointMission.Builder();
         for (int i = 0; i < this.waypointSettings.size(); i ++)
@@ -742,7 +769,7 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
             wp.coordinate = new LocationCoordinate2D(this.waypointSettings.get(i).geo.y, this.waypointSettings.get(i).geo.x);
             wp.altitude = (float)this.waypointSettings.get(i).geo.z;
             wp.speed = (float)this.waypointSettings.get(i).speed;
-            wp.cornerRadiusInMeters = 2.2f; //(float)this.waypointSettings.get(i).radius;
+            wp.cornerRadiusInMeters = Float.parseFloat(turnRad.getText().toString()); //(float)this.waypointSettings.get(i).radius;
 
             if (i+1 < this.waypointSettings.size()) {
                 int angular_velocity = this.waypointSettings.get(i+1).heading - this.waypointSettings.get(i).heading; // Ugly approximation of velocity
@@ -994,7 +1021,8 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
     }
 
     private void uploadWayPointMission(){
-        setResultToToast("Waypoint operator state was: " + getWaypointMissionOperator().getCurrentState());
+
+        setResultToToast("Waypoint operator state is: " + getWaypointMissionOperator().getCurrentState());
 
         getWaypointMissionOperator().uploadMission(new CommonCallbacks.CompletionCallback() {
             @Override
@@ -1002,12 +1030,10 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
                 if (error == null) {
                     setResultToToast("Mission upload successfully!");
                     missionUploaded = true;
-                    startWaypointMission();
+                    //startWaypointMission();
 
                 } else {
                     missionUploaded = false;
-                    setResultToToast("Mission upload failed, error: " + error.getDescription() + " retrying...");
-                    setResultToToast("Waypoint operator state was: " + getWaypointMissionOperator().getCurrentState());
                     getWaypointMissionOperator().retryUploadMission(null);
                 }
             }
@@ -1093,6 +1119,69 @@ public class Waypoint1Activity extends FragmentActivity implements View.OnClickL
 
     }
 
-}
+private void setUpListener() {
+        listener = new WaypointMissionOperatorListener() {
+            @Override
+            public void onDownloadUpdate(@NonNull WaypointMissionDownloadEvent waypointMissionDownloadEvent) {
+                if (waypointMissionDownloadEvent.getProgress() != null
+                        && waypointMissionDownloadEvent.getProgress().isSummaryDownloaded
+                        && waypointMissionDownloadEvent.getProgress().downloadedWaypointIndex == (getWaypointMissionOperator().getLoadedMission().getWaypointCount() - 1)) {
+                    setResultToToast("Mission is downloaded successfully");
+                }
+            }
+
+            @Override
+            public void onUploadUpdate(@NonNull WaypointMissionUploadEvent waypointMissionUploadEvent) {
+                if (waypointMissionUploadEvent.getProgress() != null
+                        && waypointMissionUploadEvent.getProgress().isSummaryUploaded
+                        && waypointMissionUploadEvent.getProgress().uploadedWaypointIndex == (getWaypointMissionOperator().getLoadedMission().getWaypointCount() - 1)) {
+                    setResultToToast("Mission is uploaded successfully");
+                    startWaypointMission();
+                }
+            }
+
+            @Override
+            public void onExecutionUpdate(@NonNull WaypointMissionExecutionEvent waypointMissionExecutionEvent) {
+                if (getWaypointMissionOperator().getCurrentState().equals(READY_TO_UPLOAD)
+                        ||   getWaypointMissionOperator().getCurrentState().equals(READY_TO_RETRY_UPLOAD)){
+                    uploadWayPointMission();
+                }
+                if(waypointMissionExecutionEvent.getCurrentState().equals(EXECUTION_PAUSED)){
+                    //setResultToToast("Mission is Paused successfully");
+                }
+                if(waypointMissionExecutionEvent.getCurrentState().equals(EXECUTING)){
+                    //setResultToToast("Mission is Running successfully");
+                }
+            }
+
+            @Override
+            public void onExecutionStart() {
+               setResultToToast("Mission started");
+            }
+
+            @Override
+            public void onExecutionFinish(@Nullable DJIError djiError) {
+                setResultToToast("Execution finished: " + (djiError == null ? "Success!" : djiError.getDescription()));
+                drone.setObjectState(ObjectStateID.ISO_OBJECT_STATE_DISARMED);
+                
+                setResultToToast("Drone is in: " + drone.getCurrentStateName());
+
+            }
+        };
+
+        if (getWaypointMissionOperator() != null && listener != null) {
+            // Example of adding listeners
+            getWaypointMissionOperator().addListener(listener);
+        }
+    }
+
+    private void tearDownListener() {
+        if (getWaypointMissionOperator() != null && listener != null) {
+            getWaypointMissionOperator().removeListener(listener);
+        }
+    }
+
+    }
+
 
 

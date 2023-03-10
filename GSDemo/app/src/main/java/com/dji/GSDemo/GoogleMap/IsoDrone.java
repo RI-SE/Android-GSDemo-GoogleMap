@@ -1,6 +1,7 @@
 package com.dji.GSDemo.GoogleMap;
 
 import android.util.Log;
+import android.widget.EditText;
 
 import org.asta.isoObject.*;
 import org.locationtech.proj4j.ProjCoordinate;
@@ -8,7 +9,7 @@ import org.locationtech.proj4j.ProjCoordinate;
 public class IsoDrone extends TestObject{
 
     public TrajectoryWaypointVector reducedTraj;
-
+    private double mReduction = 1;
    IsoDrone(String ip) {
        super(ip);
 
@@ -68,10 +69,11 @@ public class IsoDrone extends TestObject{
     public void removePointsToClose(){
         TrajectoryWaypointVector newTraj = new TrajectoryWaypointVector();
         CartesianPosition p1 = this.reducedTraj.get(1).getPos();
+
         for(int i=1; i<this.reducedTraj.size(); i++){
             CartesianPosition p2 = this.reducedTraj.get(i-1).getPos();
             double distance = Math.sqrt((Math.pow(p1.getXCoord_m() - p2.getXCoord_m(), 2) + Math.pow(p1.getYCoord_m() - p2.getYCoord_m(), 2) + Math.pow(p1.getZCoord_m() - p2.getZCoord_m(), 2)));
-            if( java.lang.Math.abs(distance) > 6  ){
+            if( java.lang.Math.abs(distance) > getMaxDistancePoints()  ){
                 newTraj.add(this.reducedTraj.get(i));
                 p1 = this.reducedTraj.get(i).getPos();
             }
@@ -145,6 +147,13 @@ public class IsoDrone extends TestObject{
         final TrajectoryWaypointVector trajResult = new TrajectoryWaypointVector();
         douglasPeucker(traj, 0, traj.size(), epsilon, trajResult);
         return trajResult;
+    }
+
+    public void setMaxDistancePoints(double reduction){
+       this.mReduction = reduction;
+    }
+    public double getMaxDistancePoints(){
+       return mReduction;
     }
 }
 
