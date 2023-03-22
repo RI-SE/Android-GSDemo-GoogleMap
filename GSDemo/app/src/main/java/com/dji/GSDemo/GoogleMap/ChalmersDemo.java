@@ -1,8 +1,6 @@
 package com.dji.GSDemo.GoogleMap;
 
-
 import android.Manifest;
-import android.app.ActionBar;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.SurfaceTexture;
@@ -19,7 +17,6 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
-
 
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -44,7 +41,6 @@ import dji.common.flightcontroller.FlightControllerState;
 import dji.common.flightcontroller.GPSSignalLevel;
 import dji.common.flightcontroller.LocationCoordinate3D;
 import dji.common.flightcontroller.virtualstick.FlightControlData;
-import dji.common.flightcontroller.virtualstick.VerticalControlMode;
 import dji.common.gimbal.Rotation;
 import dji.common.gimbal.RotationMode;
 import dji.common.mission.waypoint.Waypoint;
@@ -72,48 +68,47 @@ import dji.sdk.sdkmanager.DJISDKManager;
 
 public class ChalmersDemo extends FragmentActivity implements TextureView.SurfaceTextureListener, View.OnClickListener {
 
+
     private static final String TAG = MainActivity.class.getName();
-    protected VideoFeeder.VideoDataListener mReceivedVideoDataListener = null;
-    TextureView mVideoSurface;
-    Timer mGimbalTaskTimer;
-    View decorView;
-    private FlightController flightController;
-    private FlightControllerState djiFlightControllerCurrentState;
-    private Timer mSendVirtualStickDataTimer;
-    private SendVirtualStickDataTask mSendVirtualStickDataTask;
     private String lastDroneState = "";
     private IsoDrone drone;
-    private double droneLocationLat = 57.688859d, droneLocationLng = 11.978795d, droneAltitude = 0d; // Johanneberg
+    private FlightController flightController;
+    private FlightControllerState djiFlightControllerCurrentState;
     private Gimbal gimbal;
-    private Button btn_atos_con, btn_drone_con, btn_ip_address, btn_drone_state, clear_wps;
-
-    private TextView text_gps, text_lat, text_lon, text_alt;
-    private CommonCallbacks.CompletionCallback callback;
-    private float mPitch;
-    private float mRoll;
-    private float mYaw;
-    private float mThrottle;
     private DJICodecManager mCodecManager;
-    private float mGimbalPitch;
-    private float mGimbalRoll;
-    private float mGimbalYaw;
+    protected VideoFeeder.VideoDataListener mReceivedVideoDataListener = null;
 
-    private Button testcircle, config, upload, start, stop;
-
-    private Button land;
-    private float mSpeed = 10.0f;
-    private float altitude = 100.0f;
-    private LatLng startLatLong;
-    public CRSFactory crsFactory = new CRSFactory();
-    public CoordinateReferenceSystem WGS84 = crsFactory.createFromParameters("WGS84","+proj=longlat +datum=WGS84 +no_defs");
-
-    public static WaypointMission.Builder waypointMissionBuilder;
-    private ArrayList<WaypointSetting> waypointSettings = new ArrayList<>();
-    private ArrayList<Waypoint> waypointList = new ArrayList<>();
 
     private WaypointMissionOperator instance;
     private WaypointMissionFinishedAction mFinishedAction = WaypointMissionFinishedAction.NO_ACTION;
     private WaypointMissionHeadingMode mHeadingMode = WaypointMissionHeadingMode.AUTO;
+    private ArrayList<WaypointSetting> waypointSettings = new ArrayList<>();
+    private ArrayList<Waypoint> waypointList = new ArrayList<>();
+    public static WaypointMission.Builder waypointMissionBuilder;
+
+
+    public CRSFactory crsFactory = new CRSFactory();
+    public CoordinateReferenceSystem WGS84 = crsFactory.createFromParameters("WGS84","+proj=longlat +datum=WGS84 +no_defs");
+
+
+    View decorView;
+    TextureView mVideoSurface;
+    private TextView text_gps, text_lat, text_lon, text_alt;
+    private Button testcircle, config, upload, start, stop, land;
+    private Button btn_atos_con, btn_drone_con, btn_ip_address, btn_drone_state, clear_wps;
+
+
+    private double droneLocationLat = 57.688859d, droneLocationLng = 11.978795d, droneAltitude = 0d; // Johanneberg
+    private float mSpeed = 10.0f;
+    private float mPitch;
+    private float mRoll;
+    private float mYaw;
+    private float mThrottle;
+    private float mGimbalPitch;
+    private float mGimbalRoll;
+    private float mGimbalYaw;
+    private float altitude = 100.0f;
+    private LatLng startLatLong;
     private boolean missionUploaded = false;
 
     public double getDroneLocationLat() {
@@ -127,6 +122,8 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     public double getDroneAltitude() {
         return droneAltitude;
     }
+
+
 
     @Override
     protected void onResume() {
@@ -198,7 +195,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 break;
             }
             case R.id.land:{
-                stopWaypointMissionAndLand();
+                LandWaypointMission();
                 break;
             }
             default:
@@ -233,6 +230,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         clear_wps.setOnClickListener(this);
         start.setOnClickListener(this);
         stop.setOnClickListener(this);
+        land.setOnClickListener(this);
 
         mVideoSurface = (TextureView) findViewById(R.id.video_preview_surface);
         if (null != mVideoSurface) {
@@ -600,7 +598,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             waypointMissionBuilder.waypointList(waypointList).waypointCount(waypointList.size());
         }
         setResultToToast("Number of waypoints " + this.waypointSettings.size());
-        mFinishedAction = WaypointMissionFinishedAction.AUTO_LAND;
+        mFinishedAction = WaypointMissionFinishedAction.NO_ACTION;
         mSpeed = 5.0f;
         mHeadingMode = WaypointMissionHeadingMode.USING_WAYPOINT_HEADING;
         altitude = (float)this.waypointSettings.get(0).geo.z;
@@ -736,13 +734,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
     private void startWaypointMission() {
         if (flightController != null) {
-//            flightController.setHomeLocationUsingAircraftCurrentLocation(new CommonCallbacks.CompletionCallback() {
-//                @Override
-//                public void onResult(DJIError error) {
-//                    setResultToToast("Set drone home at take off site: " + (error == null ? "Success" : error.getDescription()));
-//                }
-//            });
-
             getWaypointMissionOperator().startMission(new CommonCallbacks.CompletionCallback() {
                 @Override
                 public void onResult(DJIError error) {
@@ -762,7 +753,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     }
 
     private void resumeWaypointMission(){
-
         getWaypointMissionOperator().resumeMission(new CommonCallbacks.CompletionCallback() {
             @Override
             public void onResult(DJIError error) {
@@ -781,44 +771,28 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
     }
 
-    private void stopWaypointMissionAndLand(){
-        getWaypointMissionOperator().stopMission(new CommonCallbacks.CompletionCallback() {
+    private void LandWaypointMission() {
+        if (getWaypointMissionOperator().getCurrentState() == WaypointMissionState.EXECUTING || getWaypointMissionOperator().getCurrentState() == WaypointMissionState.EXECUTION_PAUSED) {
+            stopWaypointMission();
+        }
+        flightController.startLanding(new CommonCallbacks.CompletionCallback() {
             @Override
             public void onResult(DJIError error) {
-                setResultToToast("Mission Stop: " + (error == null ? "Success" : error.getDescription()));
+                setResultToToast("Initializing landing: " + (error == null ? "Success" : error.getDescription()));
             }
         });
 
-        if (flightController != null) {
-        flightController.startGoHome(new CommonCallbacks.CompletionCallback() {
-             @Override
-             public void onResult(DJIError error) {
-                 if (error == null) {
-                     setResultToToast("Going to home location.");
+        if (djiFlightControllerCurrentState.isLandingConfirmationNeeded()){
+            flightController.confirmLanding(new CommonCallbacks.CompletionCallback() {
+                @Override
+                public void onResult(DJIError error) {
+                    setResultToToast("Confirming landing: " + (error == null ? "Success" : error.getDescription()));
+                }
+            });
 
-                 } else {
-                     setResultToToast("Going home failed: " + (error.getDescription()));
-                 }
-             }
-     });
-
-
-//
-//            if (flightController.getState().isLandingConfirmationNeeded()){
-//                flightController.confirmLanding(new CommonCallbacks.CompletionCallback() {
-//                    @Override
-//                    public void onResult(DJIError error) {
-//                        if (error == null) {
-//                            setResultToToast("Landing conformation was successful!");
-//                        } else {
-//                            setResultToToast("Landing confirmation failed, error: " + error.getDescription() + "...");
-//
-//                        }
-//                    }
-//                });
-//            }
         }
     }
+
     private ProjCoordinate coordGeoToCart(LatLng origin, ProjCoordinate llh){
         String projStr = buildOriginProjString(origin.latitude, origin.longitude);
         CoordinateTransformFactory ctFactory = new CoordinateTransformFactory();
@@ -835,7 +809,5 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 //        stringBuffer.append("+proj=tmerc +lat_0=" + latitude + " +lon_0=" + longitude + " +k=0.9996 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs");
 //        return stringBuffer.toString();
 //    }
-
-
 
 }
