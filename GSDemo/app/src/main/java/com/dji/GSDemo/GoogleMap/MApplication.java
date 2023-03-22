@@ -62,7 +62,7 @@ public class MApplication extends Application {
 class Task implements Runnable {
     @Override
     public void run() {
-        IsoDrone drone = new IsoDrone("192.168.166.127");
+        IsoDrone drone = new IsoDrone("192.168.72.229");
         double test = 0.01;
         String lastDroneState = "";
 

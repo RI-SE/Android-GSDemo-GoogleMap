@@ -66,6 +66,18 @@ import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKInitEvent;
 import dji.sdk.sdkmanager.DJISDKManager;
 
+
+import org.apache.commons.math3.*;
+
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.DecompositionSolver;
+import org.apache.commons.math3.linear.DiagonalMatrix;
+import org.apache.commons.math3.linear.LUDecomposition;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
+
+
 public class ChalmersDemo extends FragmentActivity implements TextureView.SurfaceTextureListener, View.OnClickListener {
 
 
@@ -235,7 +247,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         mVideoSurface = (TextureView) findViewById(R.id.video_preview_surface);
         if (null != mVideoSurface) {
             mVideoSurface.setSurfaceTextureListener(this);
-
 
         }
     }
@@ -580,6 +591,47 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         return result;
     }
 
+
+    private void generateWaypointsFromTraj(LatLng origin, TrajectoryWaypointVector trajectory){
+
+        //Add extra point before first point to correct heading
+        //add trajPoints
+        RealMatrix A = MatrixUtils.createRealMatrix(trajectory.size(), trajectory.size());
+        ArrayRealVector b = new ArrayRealVector(trajectory.size());
+        for (int i = 0; i < trajectory.size(); ++i) {
+            A.setEntry(i,i,1);
+            if (i+1 < trajectory.size() ) {
+                A.setEntry(i,i+1,1);
+                Double dist = Math.sqrt(
+                        Math.pow(trajectory.get(i).getPos().getXCoord_m() - trajectory.get(i+1).getPos().getXCoord_m(), 2)
+                                + Math.pow(trajectory.get(i).getPos().getYCoord_m() - trajectory.get(i+1).getPos().getYCoord_m(), 2));
+                b.setEntry(i, dist);
+            }
+            else {
+                b.setEntry(i,0.2);
+            }
+        }
+        DecompositionSolver solver = new LUDecomposition(A).getSolver();
+        RealVector radii = solver.solve(b);
+
+        for(int i = 0; i < trajectory.size(); i ++){
+            WaypointSetting wps = new WaypointSetting(coordCartToGeo(origin, new ProjCoordinate(trajectory.get(i).getPos().getXCoord_m(), trajectory.get(i).getPos().getYCoord_m(), trajectory.get(i).getPos().getZCoord_m())), new ProjCoordinate());
+            this.waypointSettings.add(wps);
+            this.waypointSettings.get(i).heading = (int)yawToHeading((180/Math.PI)*trajectory.get(i).getPos().getHeading_rad());
+            this.waypointSettings.get(i).geo.z = trajectory.get(i).getPos().getZCoord_m();
+            this.waypointSettings.get(i).speed = (float)trajectory.get(i).getSpd().getLongitudinal_m_s(); //Possible lossy conversion?
+            this.waypointSettings.get(i).radius = radii.getEntry(i) -0.01;
+        }
+
+        //add landing point
+        // WaypointSetting wps = new WaypointSetting(coordCartToGeo(origin, new ProjCoordinate(0, 0)), new ProjCoordinate());
+        // wps.heading = 0;
+        // wps.speed = 15;
+        // wps.geo.z = 6;
+        // this.waypointSettings.add(wps);
+    }
+
+
     private void deployTraj(){
         Log.wtf("Error", "Deploying traj");
         waypointMissionBuilder = new WaypointMission.Builder();
@@ -607,6 +659,34 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         uploadWayPointMission();
     }
 
+
+    private double headingToYaw(double heading_deg){
+        return wrapAngle360(90-heading_deg);
+    }
+
+    private double yawToHeading(double yaw_deg){
+        return wrapAngle180(90-yaw_deg);
+    }
+
+    private double wrapAngle360(double yaw_deg){
+        while (yaw_deg < 0) {
+            yaw_deg += 360;
+        }
+        while (yaw_deg > 360) {
+            yaw_deg -= 360;
+        }
+        return yaw_deg;
+    }
+
+    private double wrapAngle180(double yaw_deg){
+        while (yaw_deg < - 180) {
+            yaw_deg += 360;
+        }
+        while (yaw_deg > 180) {
+            yaw_deg -= 360;
+        }
+        return yaw_deg;
+    }
 
     class ChangeGimbalTask extends TimerTask {
         @Override
