@@ -70,7 +70,11 @@
             android:name=".ConnectionActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|keyboard"
             android:label="@string/app_name"
+
             android:screenOrientation="reverseLandscape">
+
+            android:exported="true">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -1,0 +1,23 @@
+# ninja log v5
+2	42	1678351393	iso22133/CMakeFiles/ISO22133.dir/src/footer.c.o	e5c0b0596353aed5
+2	45	1678351393	iso22133/CMakeFiles/ISO22133.dir/src/header.c.o	2bc74d3552b6d0fc
+3	53	1678351393	iso22133/CMakeFiles/ISO22133.dir/src/iohelpers.c.o	62ef1fde2c59cd60
+1	59	1678351393	iso22133/CMakeFiles/ISO22133.dir/positioning.c.o	a56f91efe23ff5e9
+54	70	1678351393	iso22133/CMakeFiles/ISO22133.dir/src/timeconversions.c.o	787a15c2de255d78
+7	84	1678351393	iso22133/CMakeFiles/ISO22133.dir/src/monr.c.o	c58d71376544e8e
+45	96	1678351393	iso22133/CMakeFiles/ISO22133.dir/src/ostm.c.o	4346d3607c6f625b
+43	120	1678351393	iso22133/CMakeFiles/ISO22133.dir/src/osem.c.o	9f0b33448131e5ff
+59	131	1678351393	iso22133/CMakeFiles/ISO22133.dir/src/traj.c.o	fe16e34e4528a539
+1	275	1678351393	iso22133/CMakeFiles/ISO22133.dir/iso22133.c.o	b8f00ce98580d36
+275	289	1678351393	/home/konglobemeralt/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/build/intermediates/cxx/Release/4e2j3x3m/obj/arm64-v8a/libISO22133.so	b898bf1f8c129b3
+1	528	1678351394	CMakeFiles/ISO_object.dir/src/trajDecoder.cpp.o	f586620c909b8902
+1	1637	1678351395	CMakeFiles/ISO_objectDemo.dir/demoIsoObject.cpp.o	745b60b88103d2d4
+1	1773	1678351395	CMakeFiles/ISO_object.dir/src/iso22133state.cpp.o	eec5cf206a772a6b
+1	2699	1678351396	CMakeFiles/ISO_object.dir/src/iso22133object.cpp.o	bc8e238c14ac9738
+2699	2737	1678351396	/home/konglobemeralt/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/build/intermediates/cxx/Release/4e2j3x3m/obj/arm64-v8a/libISO_object.so	be58d8c75c59ecb3
+2737	2754	1678351396	/home/konglobemeralt/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/build/intermediates/cxx/Release/4e2j3x3m/obj/arm64-v8a/ISO_objectDemo	92a0f50fac667494
+2737	3089	1678351396	CMakeFiles/isoObject_wrap.dir/isoObjectJAVA_wrap.cxx	c532f72a016ea5e9
+2737	3089	1678351396	isoObject_wrap.java	c532f72a016ea5e9
+2737	3089	1678351396	isoObject_wrapJNI.java	c532f72a016ea5e9
+3089	4871	1678351398	CMakeFiles/isoObject_wrap.dir/CMakeFiles/isoObject_wrap.dir/isoObjectJAVA_wrap.cxx.o	f39089c1546a1c76
+4871	4895	1678351398	/home/konglobemeralt/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/build/intermediates/cxx/Release/4e2j3x3m/obj/arm64-v8a/libisoObject_wrap.so	65686ed77122a348
