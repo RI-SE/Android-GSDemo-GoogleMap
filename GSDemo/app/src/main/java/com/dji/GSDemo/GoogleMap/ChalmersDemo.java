@@ -11,6 +11,7 @@ import android.view.MotionEvent;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -479,29 +480,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         //Log.wtf("alt: ", String.valueOf(drone.getOrigin().getAltitude_m()));
 
         if (drone.getCurrentStateName().equals("Armed") || (drone.getCurrentStateName().equals("Running"))) {
-
-            double isoLat = drone.getOrigin().getLatitude_deg();
-            double isoLog = drone.getOrigin().getLongitude_deg();
-
-            LatLng isoOrigin = new LatLng(isoLat, isoLog);
-
-            ProjCoordinate dronePosition = new ProjCoordinate(droneLocationLat, droneLocationLng);
-            ProjCoordinate result = coordGeoToCart(isoOrigin, dronePosition);
-
-            CartesianPosition monrPos = new CartesianPosition();
-            monrPos.setXCoord_m(result.x);
-            monrPos.setYCoord_m(result.y);
-            monrPos.setZCoord_m(droneAltitude);
-            monrPos.setIsPositionValid(true);
-
-            LatLng droneStart = new LatLng(droneLocationLat, droneLocationLng);
-            Log.wtf(TAG, droneStart.toString());
-            ProjCoordinate pc = coordGeoToCart(droneStart, dronePosition);
-            double heading = Math.acos(pc.x / (Math.sqrt(Math.pow(pc.x, 2) + Math.pow(pc.y, 2))));
-            monrPos.setHeading_rad(heading);
-            monrPos.setIsHeadingValid(true);
-
-            drone.setPosition(monrPos);
+            sendMonr();
         }
 
         if (drone.getCurrentStateName().equals("Init") && lastDroneState != "Init") {
@@ -516,12 +495,49 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
         } else if (drone.getCurrentStateName().equals("Armed") && lastDroneState != "Armed") {
             Log.wtf("Error", "Armed");
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    Log.wtf("TrajName: ", drone.getTrajectoryHeader().getTrajectoryName());
+                    TrajectoryWaypointVector traj =  drone.getTrajectory();
+                    waypointSettings.clear();
+
+                    //Reduce points in traj if to large (99 max amount of waypoints)
+                    if(traj.size() > 9999){
+                        double epsilon = 0.001;
+                        do{
+                            drone.reducePoints(epsilon);
+                            epsilon += 0.001;
+                            setResultToToast("reducing traj");
+                        }while (drone.getReducedTraj().size() > 99 && epsilon < 0.06);
+                        Log.wtf("newTraj", String.valueOf(drone.getReducedTraj().size()));
+                        waypointSettings.clear();
+                        setResultToToast("peucker Traj: " + String.valueOf(drone.getReducedTraj().size()));
+                        drone.removePointsToClose();
+                        setResultToToast("remove points to close: " + String.valueOf(drone.getReducedTraj().size()));
+                        generateWaypointsFromTraj(new LatLng(drone.getOrigin().getLatitude_deg(), drone.getOrigin().getLongitude_deg()), drone.getReducedTraj()); //Use reduced
+                    }else{
+                        waypointSettings.clear();
+                        drone.reducedTraj = drone.getTrajectory(); //Put the non douglas-peucker:ed traj in
+                        setResultToToast("non reduced Traj: " + String.valueOf(drone.getReducedTraj().size()));
+                        drone.removePointsToClose();
+                        setResultToToast("remove points to close: " + String.valueOf(drone.getReducedTraj().size()));
+                        generateWaypointsFromTraj(new LatLng(drone.getOrigin().getLatitude_deg(), drone.getOrigin().getLongitude_deg()), drone.reducedTraj); // use set traj
+                    }
+                    //generateTestCircleCoordinates(new LatLng(droneLocationLat, droneLocationLng), 10, 3, 1,19, true);
+                    deployTraj();
+                }
+            });
+
+            Log.wtf("Error", "Armed");
             lastDroneState = "Armed";
             startDroneMotors();
-        } else if (drone.getCurrentStateName().equals("Disarmed") && lastDroneState != "Disarmed") {
+        } else if (drone.getCurrentStateName().equals("Disarmed")) {
 
             Log.wtf("Error", "Disarmed");
             lastDroneState = "Disarmed";
+            sendMonr();
             updateStateButton(lastDroneState, Color.YELLOW);
         } else if (drone.getCurrentStateName().equals("PreRunning") && lastDroneState != "PreRunning") {
             Log.wtf("Error", "PreRunning");
@@ -529,6 +545,11 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
             updateStateButton(lastDroneState, Color.DKGRAY);
         } else if (drone.getCurrentStateName().equals("Running") && lastDroneState != "Running") {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    resumeWaypointMission();
+                }});
             Log.wtf("Error", "Running");
             lastDroneState = "Running";
             updateStateButton(lastDroneState, Color.RED);
@@ -542,9 +563,37 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         } else if (drone.getCurrentStateName().equals("EmergencyStop") && lastDroneState != "EmergencyStop") {
             Log.wtf("Error", "EmergencyStop");
             lastDroneState = "EmergencyStop";
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    stopWaypointMission();
+                }});
             updateStateButton(lastDroneState, Color.BLACK);
             stopDroneRecording();
         }
+    }
+    public void sendMonr(){
+        double isoLat = drone.getOrigin().getLatitude_deg();
+        double isoLog = drone.getOrigin().getLongitude_deg();
+
+        LatLng isoOrigin = new LatLng(isoLat, isoLog);
+
+        ProjCoordinate dronePosition = new ProjCoordinate(droneLocationLat, droneLocationLng);
+        ProjCoordinate result = coordGeoToCart(isoOrigin, dronePosition);
+
+        CartesianPosition monrPos = new CartesianPosition();
+        monrPos.setXCoord_m(result.x);
+        monrPos.setYCoord_m(result.y);
+        monrPos.setZCoord_m(droneAltitude);
+        monrPos.setIsXcoordValid(true);
+        monrPos.setIsYcoordValid(true);
+        monrPos.setIsZcoordValid(true);
+        monrPos.setIsPositionValid(true);
+
+        monrPos.setHeading_rad(headingToYaw(flightController.getState().getAttitude().yaw) * Math.PI/180);
+        monrPos.setIsHeadingValid(true);
+        drone.setPosition(monrPos);
+
     }
 
     private void updateStateButton(String state, Integer color) {
