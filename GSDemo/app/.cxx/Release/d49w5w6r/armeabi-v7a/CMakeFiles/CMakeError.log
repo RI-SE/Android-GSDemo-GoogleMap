@@ -1,0 +1,68 @@
+Performing C SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD failed with the following output:
+Change Dir: /home/konglobemeralt/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/.cxx/Release/d49w5w6r/armeabi-v7a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/konglobemeralt/Android/Sdk/cmake/3.18.1/bin/ninja cmTC_c6941 && [1/2] Building C object CMakeFiles/cmTC_c6941.dir/src.c.o
+clang: warning: -llog: 'linker' input unused [-Wunused-command-line-argument]
+src.c:13:3: warning: implicit declaration of function 'pthread_cancel' is invalid in C99 [-Wimplicit-function-declaration]
+  pthread_cancel(thread);
+  ^
+1 warning generated.
+[2/2] Linking C executable cmTC_c6941
+FAILED: cmTC_c6941 
+: && /home/konglobemeralt/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=armv7-none-linux-androideabi19 --gcc-toolchain=/home/konglobemeralt/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64 --sysroot=/home/konglobemeralt/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security -llog -DCMAKE_HAVE_LIBC_PTHREAD -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections CMakeFiles/cmTC_c6941.dir/src.c.o -o cmTC_c6941  -latomic -lm && :
+ld: error: undefined symbol: pthread_cancel
+>>> referenced by src.c:13
+>>>               CMakeFiles/cmTC_c6941.dir/src.c.o:(main)
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+#include <pthread.h>
+
+void* test_func(void* data)
+{
+  return data;
+}
+
+int main(void)
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, test_func, NULL);
+  pthread_detach(thread);
+  pthread_cancel(thread);
+  pthread_join(thread, NULL);
+  pthread_atfork(NULL, NULL, NULL);
+  pthread_exit(NULL);
+
+  return 0;
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/konglobemeralt/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/.cxx/Release/d49w5w6r/armeabi-v7a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/konglobemeralt/Android/Sdk/cmake/3.18.1/bin/ninja cmTC_5fa73 && [1/2] Building C object CMakeFiles/cmTC_5fa73.dir/CheckFunctionExists.c.o
+clang: warning: -llog: 'linker' input unused [-Wunused-command-line-argument]
+[2/2] Linking C executable cmTC_5fa73
+FAILED: cmTC_5fa73 
+: && /home/konglobemeralt/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=armv7-none-linux-androideabi19 --gcc-toolchain=/home/konglobemeralt/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64 --sysroot=/home/konglobemeralt/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security -llog -DCHECK_FUNCTION_EXISTS=pthread_create -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections CMakeFiles/cmTC_5fa73.dir/CheckFunctionExists.c.o -o cmTC_5fa73  -lpthreads  -latomic -lm && :
+ld: error: unable to find library -lpthreads
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the function pthread_create exists in the pthread failed with the following output:
+Change Dir: /home/konglobemeralt/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/.cxx/Release/d49w5w6r/armeabi-v7a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/konglobemeralt/Android/Sdk/cmake/3.18.1/bin/ninja cmTC_b0983 && [1/2] Building C object CMakeFiles/cmTC_b0983.dir/CheckFunctionExists.c.o
+clang: warning: -llog: 'linker' input unused [-Wunused-command-line-argument]
+[2/2] Linking C executable cmTC_b0983
+FAILED: cmTC_b0983 
+: && /home/konglobemeralt/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=armv7-none-linux-androideabi19 --gcc-toolchain=/home/konglobemeralt/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64 --sysroot=/home/konglobemeralt/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security -llog -DCHECK_FUNCTION_EXISTS=pthread_create -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections CMakeFiles/cmTC_b0983.dir/CheckFunctionExists.c.o -o cmTC_b0983  -lpthread  -latomic -lm && :
+ld: error: unable to find library -lpthread
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
+
+
+
