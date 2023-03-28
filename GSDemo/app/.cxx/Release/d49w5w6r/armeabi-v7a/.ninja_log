@@ -1,0 +1,23 @@
+# ninja log v5
+155	296	1677676232	iso22133/CMakeFiles/ISO22133.dir/src/osem.c.o	f7faf7301cc61bed
+157	265	1677676232	iso22133/CMakeFiles/ISO22133.dir/src/traj.c.o	660bb35ee67e4042
+2602	2992	1677506110	isoObject_wrap.java	abd6bf2cdffe1dc0
+162	223	1677676232	iso22133/CMakeFiles/ISO22133.dir/src/timeconversions.c.o	8a221f74a8dac738
+1	3992	1677676236	CMakeFiles/ISO_object.dir/src/iso22133object.cpp.o	d7ceea2757bd4955
+156	325	1677676232	iso22133/CMakeFiles/ISO22133.dir/src/ostm.c.o	a5602bcac0ce216d
+2	155	1677676232	iso22133/CMakeFiles/ISO22133.dir/src/header.c.o	ddfa1ea396045fef
+4029	6284	1677676238	CMakeFiles/isoObject_wrap.dir/CMakeFiles/isoObject_wrap.dir/isoObjectJAVA_wrap.cxx.o	be82e74f76816f65
+14	157	1677676232	iso22133/CMakeFiles/ISO22133.dir/src/iohelpers.c.o	b45690188ce7634c
+1	513	1677676232	iso22133/CMakeFiles/ISO22133.dir/iso22133.c.o	f8d5f52473effd1a
+3992	4029	1677676236	/home/konglobemeralt/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/build/intermediates/cxx/Release/d49w5w6r/obj/armeabi-v7a/libISO_object.so	67ce3db3186962ba
+513	558	1677676232	/home/konglobemeralt/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/build/intermediates/cxx/Release/d49w5w6r/obj/armeabi-v7a/libISO22133.so	546df87bad715c00
+1	1162	1677676233	CMakeFiles/ISO_object.dir/src/trajDecoder.cpp.o	ecab8e97bc293b86
+1	2517	1677676234	CMakeFiles/ISO_objectDemo.dir/demoIsoObject.cpp.o	4e3db154d2b77ec
+2602	2992	1677506110	isoObject_wrapJNI.java	abd6bf2cdffe1dc0
+6284	6315	1677676238	/home/konglobemeralt/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/build/intermediates/cxx/Release/d49w5w6r/obj/armeabi-v7a/libisoObject_wrap.so	4163d7d3b7c543bb
+1	164	1677676232	iso22133/CMakeFiles/ISO22133.dir/positioning.c.o	c0d5fce7ae6da421
+2602	2992	1677506110	CMakeFiles/isoObject_wrap.dir/isoObjectJAVA_wrap.cxx	abd6bf2cdffe1dc0
+1	2727	1677676234	CMakeFiles/ISO_object.dir/src/iso22133state.cpp.o	28cbabe58798110e
+1	156	1677676232	iso22133/CMakeFiles/ISO22133.dir/src/footer.c.o	68dd6716fc7d516f
+4029	4052	1677676236	/home/konglobemeralt/Documents/gitz/Android-GSDemo-GoogleMap/GSDemo/app/build/intermediates/cxx/Release/d49w5w6r/obj/armeabi-v7a/ISO_objectDemo	afa0cb7226b47a81
+1	162	1677676232	iso22133/CMakeFiles/ISO22133.dir/src/monr.c.o	b642bab75f1da15b
