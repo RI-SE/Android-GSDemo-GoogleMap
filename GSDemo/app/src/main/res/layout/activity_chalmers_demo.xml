@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,6 +10,7 @@
 
 
     <LinearLayout
+        android:id="@+id/topLayout"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:background="@color/cast_intro_overlay_background_color"
@@ -79,7 +80,30 @@
 
     </LinearLayout>
 
+    <TextureView
+        android:id="@+id/video_previewer_surface"
+        android:layout_width="640dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/topLayout"/>
+
+    <ImageView
+        android:id="@+id/tracking_send_rect_iv"
+        android:layout_width="150dp"
+        android:layout_height="100dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/black_rectangle"
+        android:visibility="invisible" />
+
+    <ImageView
+        android:id="@+id/tracking_rst_rect_iv"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/visual_track_lowconfidence"
+        android:visibility="invisible" />
+
     <LinearLayout
+        android:layout_below="@+id/topLayout"
         android:id = '@+id/main_title_rl'
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -88,14 +112,6 @@
         <FrameLayout
             android:layout_width="640dp"
             android:layout_height="360dp">
-
-            <TextureView
-                android:id="@+id/video_previewer_surface"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_below="@id/main_title_rl"
-                android:layout_centerInParent="true"
-                android:layout_gravity="center" />
 
             <TextView
                 android:id="@+id/text_gps"
@@ -139,29 +155,6 @@
                 android:text="ALT: "
                 android:textSize="20dp"
                 android:textColor="#D40000"/>
-
-            <LinearLayout
-                android:id="@+id/set_autosensing_bg_layout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_gravity="bottom|left">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:layout_gravity="center"
-                    android:text="MultiTrackingEnable"
-                    android:textColor="#D40000" />
-
-                <Switch
-                    android:id="@+id/set_multitracking_enabled"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center" />
-            </LinearLayout>
-
         </FrameLayout>
 
 
@@ -224,5 +217,33 @@
         </LinearLayout>
 
     </LinearLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/tracking_bg_layout"
+        android:layout_below="@+id/topLayout"
+        >
+        <LinearLayout
+            android:id="@+id/set_autosensing_bg_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:orientation="vertical">
 
-</LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:text="MultiTrackingEnable"
+                android:textColor="#D40000" />
+
+            <Switch
+                android:id="@+id/set_multitracking_enabled"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center" />
+        </LinearLayout>
+    </RelativeLayout>
+
+</RelativeLayout>

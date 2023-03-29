@@ -116,15 +116,13 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
     private RelativeLayout.LayoutParams layoutParams;
     private Switch mAutoSensingSw;
-    private Switch mQuickShotSw;
+
     private ImageButton mPushDrawerIb;
     private SlidingDrawer mPushInfoSd;
     private ImageButton mStopBtn;
     private ImageView mTrackingImage;
     private RelativeLayout mBgLayout;
     private TextView mPushInfoTv;
-    private Switch mPushBackSw;
-    private Switch mGestureModeSw;
     private ImageView mSendRectIV;
     private Button mConfigBtn;
     private Button mConfirmBtn;
@@ -199,6 +197,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         super.onResume();
         initPreviewer();
         onProductChange();
+        initMissionManager();
 
         if (mVideoSurface == null) {
             Log.e(TAG, "mVideoSurface is null");
@@ -281,110 +280,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 LandWaypointMission();
                 break;
             }
-            case R.id.recommended_configuration_btn:
-                Log.wtf("recommended_configuration_btn: ", "Start the tracking operator");
-                mActiveTrackOperator.setRecommendedConfiguration(new CommonCallbacks.CompletionCallback() {
-                    @Override
-                    public void onResult(DJIError error) {
-                        setResultToToast("Set Recommended Config " + (error == null ? "Success" : error.getDescription()));
-                    }
-                });
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mConfigBtn.setVisibility(View.GONE);
-                    }
-                });
-                break;
-
-            case R.id.confirm_btn:
-                boolean isAutoTracking =
-                        isAutoSensingSupported &&
-                                (mActiveTrackOperator.isAutoSensingEnabled() ||
-                                        mActiveTrackOperator.isAutoSensingForQuickShotEnabled());
-                if (isAutoTracking) {
-                    startAutoSensingMission();
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mStopBtn.setVisibility(View.VISIBLE);
-                            mRejectBtn.setVisibility(View.VISIBLE);
-                            mConfirmBtn.setVisibility(View.INVISIBLE);
-                        }
-                    });
-                } else {
-                    trackingIndex = INVAVID_INDEX;
-                    mActiveTrackOperator.acceptConfirmation(new CommonCallbacks.CompletionCallback() {
-
-                        @Override
-                        public void onResult(DJIError error) {
-                            setResultToToast(error == null ? "Accept Confirm Success!" : error.getDescription());
-                        }
-                    });
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mStopBtn.setVisibility(View.VISIBLE);
-                            mRejectBtn.setVisibility(View.VISIBLE);
-                            mConfirmBtn.setVisibility(View.INVISIBLE);
-                        }
-                    });
-
-                }
-                break;
-
-            case R.id.tracking_stop_btn:
-                trackingIndex = INVAVID_INDEX;
-                mActiveTrackOperator.stopTracking(new CommonCallbacks.CompletionCallback() {
-
-                    @Override
-                    public void onResult(DJIError error) {
-                        setResultToToast(error == null ? "Stop track Success!" : error.getDescription());
-                    }
-                });
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mTrackingImage != null) {
-                            mTrackingImage.setVisibility(View.INVISIBLE);
-                            mSendRectIV.setVisibility(View.INVISIBLE);
-                            mStopBtn.setVisibility(View.INVISIBLE);
-                            mRejectBtn.setVisibility(View.INVISIBLE);
-                            mConfirmBtn.setVisibility(View.VISIBLE);
-                        }
-                    }
-                });
-                break;
-
-            case R.id.reject_btn:
-                trackingIndex = INVAVID_INDEX;
-                mActiveTrackOperator.rejectConfirmation(new CommonCallbacks.CompletionCallback() {
-
-                    @Override
-                    public void onResult(DJIError error) {
-
-                        setResultToToast(error == null ? "Reject Confirm Success!" : error.getDescription());
-                    }
-                });
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mStopBtn.setVisibility(View.VISIBLE);
-                        mRejectBtn.setVisibility(View.VISIBLE);
-                        mConfirmBtn.setVisibility(View.INVISIBLE);
-                    }
-                });
-                break;
-
-            case R.id.tracking_drawer_control_ib:
-                if (mPushInfoSd.isOpened()) {
-                    mPushInfoSd.animateClose();
-                } else {
-                    mPushInfoSd.animateOpen();
-                }
-                break;
 
             default:
                 break;
@@ -393,6 +288,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+        Log.wtf("TOUCH", "FOUND FINGER");
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 isDrawingRect = false;
@@ -425,9 +321,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 break;
 
             case MotionEvent.ACTION_UP:
-                if (mGestureModeSw.isChecked()) {
-                    setResultToToast("Please try to start Gesture Mode!");
-                } else if (!isDrawingRect) {
+                if (!isDrawingRect) {
                     if (targetViewHashMap.get(trackingIndex) != null) {
                         setResultToToast("Selected Index: " + trackingIndex + ",Please Confirm it!");
                         targetViewHashMap.get(trackingIndex).setBackgroundColor(Color.TRANSPARENT);
@@ -477,48 +371,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 quickShotMode = QuickShotMode.UNKNOWN;
                 setAutoSensingEnabled(isChecked);
                 break;
-            case R.id.set_multiquickshot_enabled:
-                startMode = ActiveTrackMode.QUICK_SHOT;
-                quickShotMode = QuickShotMode.CIRCLE;
-                //checkStorageStates();
-                setAutoSensingForQuickShotEnabled(isChecked);
-                break;
-            case R.id.tracking_pull_back_tb:
-                mActiveTrackOperator.setRetreatEnabled(isChecked, new CommonCallbacks.CompletionCallback() {
-                    @Override
-                    public void onResult(DJIError error) {
-                        if (error != null) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mPushBackSw.setChecked(!isChecked);
-                                }
-                            });
-                        }
-                        setResultToToast("Set Retreat Enabled: " + (error == null
-                                ? "Success"
-                                : error.getDescription()));
-                    }
-                });
-                break;
-            case R.id.tracking_in_gesture_mode:
-                mActiveTrackOperator.setGestureModeEnabled(isChecked, new CommonCallbacks.CompletionCallback() {
-                    @Override
-                    public void onResult(DJIError error) {
-                        if (error != null) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mGestureModeSw.setChecked(!isChecked);
-                                }
-                            });
-                        }
-                        setResultToToast("Set GestureMode Enabled: " + (error == null
-                                ? "Success"
-                                : error.getDescription()));
-                    }
-                });
-                break;
             default:
                 break;
         }
@@ -528,37 +380,17 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
         layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.MATCH_PARENT);
-        mPushDrawerIb = (ImageButton) findViewById(R.id.tracking_drawer_control_ib);
-        mPushInfoSd = (SlidingDrawer) findViewById(R.id.tracking_drawer_sd);
-        mPushInfoTv = (TextView) findViewById(R.id.tracking_push_tv);
-        mBgLayout = (RelativeLayout) findViewById(R.id.tracking_bg_layout);
-        mSendRectIV = (ImageView) findViewById(R.id.tracking_send_rect_iv);
-        mTrackingImage = (ImageView) findViewById(R.id.tracking_rst_rect_iv);
-        mConfirmBtn = (Button) findViewById(R.id.confirm_btn);
-        mStopBtn = (ImageButton) findViewById(R.id.tracking_stop_btn);
-        mRejectBtn = (Button) findViewById(R.id.reject_btn);
-        mConfigBtn = (Button) findViewById(R.id.recommended_configuration_btn);
-        mAutoSensingSw = (Switch) findViewById(R.id.set_multitracking_enabled);
-        mQuickShotSw = (Switch) findViewById(R.id.set_multiquickshot_enabled);
-        mPushBackSw = (Switch) findViewById(R.id.tracking_pull_back_tb);
-        mGestureModeSw = (Switch) findViewById(R.id.tracking_in_gesture_mode);
-
-        mAutoSensingSw.setChecked(false);
-        mGestureModeSw.setChecked(false);
-        mQuickShotSw.setChecked(false);
-        mPushBackSw.setChecked(false);
+        mAutoSensingSw = findViewById(R.id.set_multitracking_enabled);
 
         mAutoSensingSw.setOnCheckedChangeListener(this);
-        mQuickShotSw.setOnCheckedChangeListener(this);
-        mPushBackSw.setOnCheckedChangeListener(this);
-        mGestureModeSw.setOnCheckedChangeListener(this);
 
-        mBgLayout.setOnTouchListener(this);
-        mConfirmBtn.setOnClickListener(this);
-        mStopBtn.setOnClickListener(this);
-        mRejectBtn.setOnClickListener(this);
-        mConfigBtn.setOnClickListener(this);
-        mPushDrawerIb.setOnClickListener(this);
+
+
+//        mConfirmBtn.setOnClickListener(this);
+//        mStopBtn.setOnClickListener(this);
+//        mRejectBtn.setOnClickListener(this);
+//        mConfigBtn.setOnClickListener(this);
+//        mPushDrawerIb.setOnClickListener(this);
 
 
         btn_atos_con = (Button) findViewById(R.id.btn_atos_con);
@@ -574,6 +406,11 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         text_lon = (TextView) findViewById(R.id.text_lon);
         text_alt = (TextView) findViewById(R.id.text_alt);
 
+        mSendRectIV = (ImageView) findViewById(R.id.tracking_send_rect_iv);
+        mTrackingImage = (ImageView) findViewById(R.id.tracking_rst_rect_iv);
+        mVideoSurface = (TextureView) findViewById(R.id.video_previewer_surface);
+        mBgLayout = (RelativeLayout) findViewById(R.id.tracking_bg_layout);
+
         testcircle = (Button) findViewById(R.id.testcircle);
         config = (Button) findViewById(R.id.pauseresume);
         clear_wps = (Button) findViewById(R.id.clear_wps);
@@ -587,8 +424,11 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         start.setOnClickListener(this);
         stop.setOnClickListener(this);
         land.setOnClickListener(this);
+        mBgLayout.setOnTouchListener(this);
 
-        mVideoSurface = (TextureView) findViewById(R.id.video_preview_surface);
+
+
+
         if (null != mVideoSurface) {
             mVideoSurface.setSurfaceTextureListener(this);
 
@@ -600,27 +440,8 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         if (mActiveTrackOperator == null) {
             return;
         }
-
         mActiveTrackOperator.addListener(this);
         mAutoSensingSw.setChecked(mActiveTrackOperator.isAutoSensingEnabled());
-        mQuickShotSw.setChecked(mActiveTrackOperator.isAutoSensingForQuickShotEnabled());
-        mGestureModeSw.setChecked(mActiveTrackOperator.isGestureModeEnabled());
-        mActiveTrackOperator.getRetreatEnabled(new CommonCallbacks.CompletionCallbackWith<Boolean>() {
-            @Override
-            public void onSuccess(final Boolean aBoolean) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mPushBackSw.setChecked(aBoolean);
-                    }
-                });
-            }
-
-            @Override
-            public void onFailure(DJIError error) {
-                setResultToToast("can't get retreat enable state " + error.getDescription());
-            }
-        });
     }
     private double calcManhattanDistance(double point1X, double point1Y, double point2X,
                                          double point2Y) {
@@ -628,9 +449,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         return Math.abs(point1X - point2X) + Math.abs(point1Y - point2Y);
     }
 
-    /**
-     * @return
-     */
     private int getTrackingIndex(final float x, final float y,
                                  final ConcurrentHashMap<Integer, MultiTrackingView> multiTrackinghMap) {
         Log.wtf(TAG, "getTrackingIndex");
@@ -871,10 +689,10 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                         });
 //
                     }
-                    Log.wtf("LOCATION GPS", String.valueOf(gps));
-                    Log.wtf("LOCATION LAT", String.valueOf(droneLocationLat));
-                    Log.wtf("LOCATION LONG", String.valueOf(droneLocationLng));
-                    Log.wtf("LOCATION ALT", String.valueOf(droneAltitude));
+//                    Log.wtf("LOCATION GPS", String.valueOf(gps));
+//                    Log.wtf("LOCATION LAT", String.valueOf(droneLocationLat));
+//                    Log.wtf("LOCATION LONG", String.valueOf(droneLocationLng));
+//                    Log.wtf("LOCATION ALT", String.valueOf(droneAltitude));
                     updateDroneLocationData();
                 }
             });
@@ -946,6 +764,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
     @Override
     public void onUpdate(ActiveTrackMissionEvent event) {
+        Log.wtf(TAG, "OnUpdate");
         StringBuffer sb = new StringBuffer();
         String errorInformation = (event.getError() == null ? "null" : event.getError().getDescription()) + "\n";
         String currentState = event.getCurrentState() == null ? "null" : event.getCurrentState().getName();
@@ -1085,7 +904,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             drone = new IsoDrone(Utils.getIPAddress(true));
             lastDroneState = drone.getCurrentStateName();
         }
-        Log.wtf("Error", "Drone is in: " + drone.getCurrentStateName());
+//        Log.wtf("Error", "Drone is in: " + drone.getCurrentStateName());
         //SetMonr data
         //Log.wtf("Lat: ", String.valueOf(drone.getOrigin().getLatitude_deg()));
         //Log.wtf("Log: ", String.valueOf(drone.getOrigin().getLongitude_deg()));
@@ -1542,16 +1361,16 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         if (state == ActiveTrackState.AUTO_SENSING ||
                 state == ActiveTrackState.AUTO_SENSING_FOR_QUICK_SHOT ||
                 state == ActiveTrackState.WAITING_FOR_CONFIRMATION) {
-            TrackingTestActivity.this.runOnUiThread(new Runnable() {
+            ChalmersDemo.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    mStopBtn.setVisibility(View.VISIBLE);
-                    mStopBtn.setClickable(true);
-                    mConfirmBtn.setVisibility(View.VISIBLE);
-                    mConfirmBtn.setClickable(true);
-                    mRejectBtn.setVisibility(View.VISIBLE);
-                    mRejectBtn.setClickable(true);
-                    mConfigBtn.setVisibility(View.GONE);
+//                    mStopBtn.setVisibility(View.VISIBLE);
+//                    mStopBtn.setClickable(true);
+//                    mConfirmBtn.setVisibility(View.VISIBLE);
+//                    mConfirmBtn.setClickable(true);
+//                    mRejectBtn.setVisibility(View.VISIBLE);
+//                    mRejectBtn.setClickable(true);
+//                    mConfigBtn.setVisibility(View.GONE);
                 }
             });
         } else if (state == ActiveTrackState.AIRCRAFT_FOLLOWING ||
@@ -1559,30 +1378,31 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 state == ActiveTrackState.FINDING_TRACKED_TARGET ||
                 state == ActiveTrackState.CANNOT_CONFIRM ||
                 state == ActiveTrackState.PERFORMING_QUICK_SHOT) {
-            TrackingTestActivity.this.runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    mStopBtn.setVisibility(View.VISIBLE);
-                    mStopBtn.setClickable(true);
-                    mConfirmBtn.setVisibility(View.INVISIBLE);
-                    mConfirmBtn.setClickable(false);
-                    mRejectBtn.setVisibility(View.VISIBLE);
-                    mRejectBtn.setClickable(true);
-                    mConfigBtn.setVisibility(View.GONE);
-                }
-            });
+            Log.wtf(TAG, "Tihi");
+//            ChalmersDemo.this.runOnUiThread(new Runnable() {
+//
+//                @Override
+//                public void run() {
+//                    mStopBtn.setVisibility(View.VISIBLE);
+//                    mStopBtn.setClickable(true);
+//                    mConfirmBtn.setVisibility(View.INVISIBLE);
+//                    mConfirmBtn.setClickable(false);
+//                    mRejectBtn.setVisibility(View.VISIBLE);
+//                    mRejectBtn.setClickable(true);
+//                    mConfigBtn.setVisibility(View.GONE);
+//                }
+//            });
         } else {
-            TrackingTestActivity.this.runOnUiThread(new Runnable() {
+            ChalmersDemo.this.runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
-                    mStopBtn.setVisibility(View.INVISIBLE);
-                    mStopBtn.setClickable(false);
-                    mConfirmBtn.setVisibility(View.INVISIBLE);
-                    mConfirmBtn.setClickable(false);
-                    mRejectBtn.setVisibility(View.INVISIBLE);
-                    mRejectBtn.setClickable(false);
+//                    mStopBtn.setVisibility(View.INVISIBLE);
+//                    mStopBtn.setClickable(false);
+//                    mConfirmBtn.setVisibility(View.INVISIBLE);
+//                    mConfirmBtn.setClickable(false);
+//                    mRejectBtn.setVisibility(View.INVISIBLE);
+//                    mRejectBtn.setClickable(false);
                     mTrackingImage.setVisibility(View.INVISIBLE);
                 }
             });
@@ -1606,7 +1426,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         final int r = (int) ((trackingRect.centerX() + trackingRect.width() / 2) * parent.getWidth());
         final int b = (int) ((trackingRect.centerY() + trackingRect.height() / 2) * parent.getHeight());
 
-        TrackingTestActivity.this.runOnUiThread(new Runnable() {
+        ChalmersDemo.this.runOnUiThread(new Runnable() {
 
             @Override
             public void run() {
@@ -1636,7 +1456,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 MultiTrackingView targetView = targetViewHashMap.get(target.getIndex());
                 postMultiResultRect(targetView, target.getTargetRect(), target);
             } else {
-                MultiTrackingView trackingView = new MultiTrackingView(TrackingTestActivity.this);
+                MultiTrackingView trackingView = new MultiTrackingView(ChalmersDemo.this);
                 mBgLayout.addView(trackingView, layoutParams);
                 targetViewHashMap.put(target.getIndex(), trackingView);
             }
@@ -1693,37 +1513,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             }
         }
     }
-
-    /**
-     * Enable QuickShotMode
-     *
-     * @param isChecked
-     */
-    private void setAutoSensingForQuickShotEnabled(final boolean isChecked) {
-        if (mActiveTrackOperator != null) {
-            if (isChecked) {
-                mActiveTrackOperator.enableAutoSensingForQuickShot(new CommonCallbacks.CompletionCallback() {
-                    @Override
-                    public void onResult(DJIError error) {
-                        if (error != null) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mQuickShotSw.setChecked(!isChecked);
-                                }
-                            });
-                        }
-                        setResultToToast("Set QuickShot Enabled " + (error == null ? "Success!" : error.getDescription()));
-                    }
-                });
-
-            } else {
-                disableAutoSensing();
-            }
-
-        }
-    }
-
     /**
      * Disable AutoSensing
      */
