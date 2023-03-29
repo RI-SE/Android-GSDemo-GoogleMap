@@ -60,9 +60,9 @@
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
-
-        <service android:name="dji.sdk.sdkmanager.DJIGlobalService"
-            tools:ignore="Instantiatable"></service>
+        <service
+            android:name="dji.sdk.sdkmanager.DJIGlobalService"
+            tools:ignore="Instantiatable" />
 
         <!-- DJI SDK -->
 
@@ -90,6 +90,9 @@
         <activity
             android:name=".Waypoint2Activity"
             android:screenOrientation="portrait" />
+        <activity android:name=".ChalmersDemo"
+            android:screenOrientation="reverseLandscape"/>
+
     </application>
 
 </manifest>
