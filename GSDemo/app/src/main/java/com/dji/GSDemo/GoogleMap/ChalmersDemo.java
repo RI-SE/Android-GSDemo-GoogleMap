@@ -3,17 +3,14 @@ package com.dji.GSDemo.GoogleMap;
 import android.Manifest;
 import android.content.IntentFilter;
 import android.graphics.Color;
-import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -23,15 +20,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.DecompositionSolver;
+import org.apache.commons.math3.linear.LUDecomposition;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.asta.isoObject.CartesianPosition;
 import org.asta.isoObject.TrajectoryWaypointVector;
 import org.locationtech.proj4j.CRSFactory;
@@ -41,35 +40,31 @@ import org.locationtech.proj4j.CoordinateTransformFactory;
 import org.locationtech.proj4j.ProjCoordinate;
 
 import java.util.ArrayList;
-import java.net.ResponseCache;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 import dji.common.camera.SettingsDefinitions;
 import dji.common.error.DJIError;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.common.flightcontroller.GPSSignalLevel;
-import dji.common.flightcontroller.LocationCoordinate3D;
-import dji.common.flightcontroller.virtualstick.FlightControlData;
+import dji.common.gimbal.Attitude;
+import dji.common.gimbal.GimbalState;
 import dji.common.gimbal.Rotation;
 import dji.common.gimbal.RotationMode;
 import dji.common.mission.activetrack.ActiveTrackMission;
-import dji.common.mission.activetrack.ActiveTrackMissionEvent;
 import dji.common.mission.activetrack.ActiveTrackMode;
-import dji.common.mission.activetrack.ActiveTrackState;
-import dji.common.mission.activetrack.ActiveTrackTargetState;
-import dji.common.mission.activetrack.ActiveTrackTrackingState;
 import dji.common.mission.activetrack.QuickShotMode;
-import dji.common.mission.activetrack.SubjectSensingState;
 import dji.common.mission.waypoint.Waypoint;
+import dji.common.mission.waypoint.WaypointExecutionProgress;
 import dji.common.mission.waypoint.WaypointMission;
+import dji.common.mission.waypoint.WaypointMissionDownloadEvent;
+import dji.common.mission.waypoint.WaypointMissionExecutionEvent;
 import dji.common.mission.waypoint.WaypointMissionFinishedAction;
 import dji.common.mission.waypoint.WaypointMissionFlightPathMode;
 import dji.common.mission.waypoint.WaypointMissionHeadingMode;
 import dji.common.mission.waypoint.WaypointMissionState;
+import dji.common.mission.waypoint.WaypointMissionUploadEvent;
 import dji.common.model.LocationCoordinate2D;
 import dji.common.product.Model;
 import dji.common.util.CommonCallbacks;
@@ -77,72 +72,38 @@ import dji.keysdk.CameraKey;
 import dji.keysdk.DJIKey;
 import dji.keysdk.FlightControllerKey;
 import dji.keysdk.KeyManager;
-import dji.keysdk.callback.ActionCallback;
 import dji.keysdk.callback.SetCallback;
-import dji.midware.data.model.P3.B;
 import dji.midware.media.DJIVideoDataRecver;
-import dji.sdk.base.BaseComponent;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.camera.Camera;
 import dji.sdk.camera.VideoFeeder;
 import dji.sdk.codec.DJICodecManager;
 import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.gimbal.Gimbal;
-import dji.sdk.mission.MissionControl;
 import dji.sdk.mission.activetrack.ActiveTrackMissionOperatorListener;
 import dji.sdk.mission.activetrack.ActiveTrackOperator;
 import dji.sdk.mission.waypoint.WaypointMissionOperator;
+import dji.sdk.mission.waypoint.WaypointMissionOperatorListener;
 import dji.sdk.products.Aircraft;
-import dji.sdk.sdkmanager.DJISDKInitEvent;
 import dji.sdk.sdkmanager.DJISDKManager;
 
 
-import org.apache.commons.math3.*;
-
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.DecompositionSolver;
-import org.apache.commons.math3.linear.DiagonalMatrix;
-import org.apache.commons.math3.linear.LUDecomposition;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
-
-
-public class ChalmersDemo extends FragmentActivity implements TextureView.SurfaceTextureListener, View.OnClickListener, View.OnTouchListener, CompoundButton.OnCheckedChangeListener, ActiveTrackMissionOperatorListener {
+public class ChalmersDemo extends FragmentActivity implements TextureView.SurfaceTextureListener, View.OnClickListener, WaypointMissionOperatorListener {
 
     private static final int MAIN_CAMERA_INDEX = 0;
     private static final int INVAVID_INDEX = -1;
     private static final int MOVE_OFFSET = 20;
-
-    private RelativeLayout.LayoutParams layoutParams;
-    private Switch mAutoSensingSw;
-
-    private ImageButton mPushDrawerIb;
-    private SlidingDrawer mPushInfoSd;
-    private ImageButton mStopBtn;
-    private ImageView mTrackingImage;
-    private RelativeLayout mBgLayout;
-    private TextView mPushInfoTv;
-    private ImageView mSendRectIV;
-    private Button mConfigBtn;
-    private Button mConfirmBtn;
-    private Button mRejectBtn;
-
-    private ActiveTrackOperator mActiveTrackOperator;
-    private ActiveTrackMission mActiveTrackMission;
-    private final DJIKey trackModeKey = FlightControllerKey.createFlightAssistantKey(FlightControllerKey.ACTIVE_TRACK_MODE);
-    private ConcurrentHashMap<Integer, MultiTrackingView> targetViewHashMap = new ConcurrentHashMap<>();
-    private int trackingIndex = INVAVID_INDEX;
-    private boolean isAutoSensingSupported = false;
-    private ActiveTrackMode startMode = ActiveTrackMode.TRACE; //Ändrare .TRACE till .SPOTLIGHT för att vi bara vill att kameran ska röra sig
-    // UPDATE: Detta funkade inte så just nu vinklar sig drönaren men man manuellt styr drönaren vart den ska åka
-    private QuickShotMode quickShotMode = QuickShotMode.UNKNOWN;
-
-    private boolean isDrawingRect = false;
-    float downX;
-    float downY;
-
     private static final String TAG = MainActivity.class.getName();
+    public static WaypointMission.Builder waypointMissionBuilder;
+    private final DJIKey trackModeKey = FlightControllerKey.createFlightAssistantKey(FlightControllerKey.ACTIVE_TRACK_MODE);
+    public CRSFactory crsFactory = new CRSFactory();
+    public CoordinateReferenceSystem WGS84 = crsFactory.createFromParameters("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
+    protected VideoFeeder.VideoDataListener mReceivedVideoDataListener = null;
+    View decorView;
+    TextureView mVideoSurface;
+    float mGimbalRoll;
+    float mGimbalYaw;
+    float mGimbalPitch;
     private String lastDroneState = "";
     private IsoDrone drone;
     private FlightController flightController;
@@ -150,23 +111,11 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     private Gimbal gimbal;
     private Camera camera;
     private DJICodecManager mCodecManager;
-    protected VideoFeeder.VideoDataListener mReceivedVideoDataListener = null;
-
-
-    private WaypointMissionOperator instance;
+    private WaypointMissionOperator waypointInstance;
     private WaypointMissionFinishedAction mFinishedAction = WaypointMissionFinishedAction.NO_ACTION;
     private WaypointMissionHeadingMode mHeadingMode = WaypointMissionHeadingMode.AUTO;
     private ArrayList<WaypointSetting> waypointSettings = new ArrayList<>();
     private ArrayList<Waypoint> waypointList = new ArrayList<>();
-    public static WaypointMission.Builder waypointMissionBuilder;
-
-
-    public CRSFactory crsFactory = new CRSFactory();
-    public CoordinateReferenceSystem WGS84 = crsFactory.createFromParameters("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
-
-
-    View decorView;
-    TextureView mVideoSurface;
     private TextView text_gps, text_lat, text_lon, text_alt;
     private Button testcircle, config, upload, start, stop, land;
     private Button btn_atos_con, btn_drone_con, btn_ip_address, btn_drone_state, clear_wps;
@@ -197,7 +146,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         super.onResume();
         initPreviewer();
         onProductChange();
-        initMissionManager();
 
         if (mVideoSurface == null) {
             Log.e(TAG, "mVideoSurface is null");
@@ -211,15 +159,10 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
     @Override
     protected void onDestroy() {
-        isAutoSensingSupported = false;
         try {
             DJIVideoDataRecver.getInstance().setVideoDataListener(false, null);
         } catch (Exception e) {
             e.printStackTrace();
-        }
-
-        if (mActiveTrackOperator != null) {
-            mActiveTrackOperator.removeListener(this);
         }
 
         if (mCodecManager != null) {
@@ -246,7 +189,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         switch (v.getId()) {
             case R.id.testcircle: {
                 this.waypointSettings.clear();
-                generateTestCircleCoordinates(new LatLng(droneLocationLat, droneLocationLng), 1, 1.5f, 1, 8, true);
+                generateTestCircleCoordinates(new LatLng(droneLocationLat, droneLocationLng), 1, 5.0f, 1, 8, false);
                 deployTraj();
                 break;
             }
@@ -286,113 +229,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         }
     }
 
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        Log.wtf("TOUCH", "FOUND FINGER");
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                isDrawingRect = false;
-                downX = event.getX();
-                downY = event.getY();
-                break;
-
-            case MotionEvent.ACTION_MOVE:
-                Log.wtf("Action_Move", "Currently drawing rectangle");
-                //setResultToToast("Action_Move");
-                if (calcManhattanDistance(downX, downY, event.getX(), event.getY()) < MOVE_OFFSET && !isDrawingRect) {
-                    trackingIndex = getTrackingIndex(downX, downY, targetViewHashMap);
-                    if (targetViewHashMap.get(trackingIndex) != null) {
-                        targetViewHashMap.get(trackingIndex).setBackgroundColor(Color.RED);
-                    }
-                    return true;
-                }
-
-                isDrawingRect = true;
-                mSendRectIV.setVisibility(View.VISIBLE);
-                int l = (int) (downX < event.getX() ? downX : event.getX());
-                int t = (int) (downY < event.getY() ? downY : event.getY());
-                int r = (int) (downX >= event.getX() ? downX : event.getX());
-                int b = (int) (downY >= event.getY() ? downY : event.getY());
-                mSendRectIV.setX(l);
-                mSendRectIV.setY(t);
-                mSendRectIV.getLayoutParams().width = r - l;
-                mSendRectIV.getLayoutParams().height = b - t;
-                mSendRectIV.requestLayout();
-                break;
-
-            case MotionEvent.ACTION_UP:
-                if (!isDrawingRect) {
-                    if (targetViewHashMap.get(trackingIndex) != null) {
-                        setResultToToast("Selected Index: " + trackingIndex + ",Please Confirm it!");
-                        targetViewHashMap.get(trackingIndex).setBackgroundColor(Color.TRANSPARENT);
-                    }
-                } else {
-                    RectF rectF = getActiveTrackRect(mSendRectIV);
-
-                    mActiveTrackMission = new ActiveTrackMission(rectF, startMode);
-                    if (startMode == ActiveTrackMode.QUICK_SHOT) {
-                        Log.wtf("StartMode", "ActiveTrackMode is set to QUICK_SHOT");
-                        mActiveTrackMission.setQuickShotMode(quickShotMode);
-                        //checkStorageStates();
-                    }
-                    mActiveTrackOperator.startTracking(mActiveTrackMission, new CommonCallbacks.CompletionCallback() {
-                        @Override
-                        public void onResult(DJIError error) {
-                            if (error == null) {
-                                isDrawingRect = false;
-                            }
-                            setResultToToast("Start Tracking: " + (error == null
-                                    ? "Success"
-                                    : error.getDescription()));
-                        }
-                    });
-                    mSendRectIV.setVisibility(View.INVISIBLE);
-                    clearCurrentView();
-                }
-                break;
-
-            default:
-                break;
-        }
-
-        return true;
-    }
-
-    @Override
-    public void onCheckedChanged(CompoundButton compoundButton, final boolean isChecked) {
-        Log.wtf("onCheckedChanged: ", "Changed some of the configurations");
-        if (mActiveTrackOperator == null) {
-            return;
-        }
-        switch (compoundButton.getId()) {
-            case R.id.set_multitracking_enabled:
-                startMode = ActiveTrackMode.TRACE;  //Ändrare .TRACE till .SPOTLIGHT för att vi bara vill att kameran ska röra sig.
-                // UPDATE: Detta funkade inte så just nu vinklar sig drönaren men man manuellt styr drönaren vart den ska åka
-                quickShotMode = QuickShotMode.UNKNOWN;
-                setAutoSensingEnabled(isChecked);
-                break;
-            default:
-                break;
-        }
-    }
-
     private void initUI() {
-
-        layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                RelativeLayout.LayoutParams.MATCH_PARENT);
-        mAutoSensingSw = findViewById(R.id.set_multitracking_enabled);
-
-        mAutoSensingSw.setOnCheckedChangeListener(this);
-
-
-
-//        mConfirmBtn.setOnClickListener(this);
-//        mStopBtn.setOnClickListener(this);
-//        mRejectBtn.setOnClickListener(this);
-//        mConfigBtn.setOnClickListener(this);
-//        mPushDrawerIb.setOnClickListener(this);
-
-
         btn_atos_con = (Button) findViewById(R.id.btn_atos_con);
         btn_drone_con = (Button) findViewById(R.id.btn_drone_con);
         btn_drone_state = (Button) findViewById(R.id.btn_drone_state);
@@ -406,10 +243,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         text_lon = (TextView) findViewById(R.id.text_lon);
         text_alt = (TextView) findViewById(R.id.text_alt);
 
-        mSendRectIV = (ImageView) findViewById(R.id.tracking_send_rect_iv);
-        mTrackingImage = (ImageView) findViewById(R.id.tracking_rst_rect_iv);
-        mVideoSurface = (TextureView) findViewById(R.id.video_previewer_surface);
-        mBgLayout = (RelativeLayout) findViewById(R.id.tracking_bg_layout);
 
         testcircle = (Button) findViewById(R.id.testcircle);
         config = (Button) findViewById(R.id.pauseresume);
@@ -424,9 +257,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         start.setOnClickListener(this);
         stop.setOnClickListener(this);
         land.setOnClickListener(this);
-        mBgLayout.setOnTouchListener(this);
-
-
 
 
         if (null != mVideoSurface) {
@@ -435,104 +265,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         }
     }
 
-    private void initMissionManager() {
-        mActiveTrackOperator = MissionControl.getInstance().getActiveTrackOperator();
-        if (mActiveTrackOperator == null) {
-            return;
-        }
-        mActiveTrackOperator.addListener(this);
-        mAutoSensingSw.setChecked(mActiveTrackOperator.isAutoSensingEnabled());
-    }
-    private double calcManhattanDistance(double point1X, double point1Y, double point2X,
-                                         double point2Y) {
-        Log.wtf("calcManhattanDistance: ","");
-        return Math.abs(point1X - point2X) + Math.abs(point1Y - point2Y);
-    }
-
-    private int getTrackingIndex(final float x, final float y,
-                                 final ConcurrentHashMap<Integer, MultiTrackingView> multiTrackinghMap) {
-        Log.wtf(TAG, "getTrackingIndex");
-        setResultToToast("getTrackingIndex");
-        //Log.wtf("MultiTrackinghMap: ", multiTrackinghMap.toString());
-        if (multiTrackinghMap == null || multiTrackinghMap.isEmpty()) {
-            Log.wtf("MultiTrackinghMap: ", "MultiTrackingMap is Null or Empty");
-            //setResultToToast("MultiTrackinghMap: " + multiTrackinghMap.toString());
-            return INVAVID_INDEX;
-        }
-
-        float l, t, r, b;
-        for (Map.Entry<Integer, MultiTrackingView> vo : multiTrackinghMap.entrySet()) {
-            int key = vo.getKey().intValue();
-            MultiTrackingView view = vo.getValue();
-            l = view.getX();
-            t = view.getY();
-            r = (view.getX() + (view.getWidth() / 2));
-            b = (view.getY() + (view.getHeight() / 2));
-
-            if (x >= l && y >= t && x <= r && y <= b) {
-                return key;
-            }
-        }
-        return INVAVID_INDEX;
-    }
-
-    /**
-     * Get ActiveTrack RectF
-     *
-     * @param iv
-     * @return
-     */
-    private RectF getActiveTrackRect(View iv) {
-        Log.wtf(TAG, "getActiveTrackRect");
-        setResultToToast("getActiveTrackRect");
-        View parent = (View) iv.getParent();
-        return new RectF(
-                ((float) iv.getLeft() + iv.getX()) / (float) parent.getWidth(),
-                ((float) iv.getTop() + iv.getY()) / (float) parent.getHeight(),
-                ((float) iv.getRight() + iv.getX()) / (float) parent.getWidth(),
-                ((float) iv.getBottom() + iv.getY()) / (float) parent.getHeight());
-    }
-
-    /**
-     * Post Result RectF
-     *
-     * @param iv
-     * @param rectF
-     * @param targetState
-     */
-    private void postResultRect(final ImageView iv, final RectF rectF,
-                                final ActiveTrackTargetState targetState) {
-
-        View parent = (View) iv.getParent();
-        RectF trackingRect = rectF;
-
-        final int l = (int) ((trackingRect.centerX() - trackingRect.width() / 2) * parent.getWidth());
-        final int t = (int) ((trackingRect.centerY() - trackingRect.height() / 2) * parent.getHeight());
-        final int r = (int) ((trackingRect.centerX() + trackingRect.width() / 2) * parent.getWidth());
-        final int b = (int) ((trackingRect.centerY() + trackingRect.height() / 2) * parent.getHeight());
-        ChalmersDemo.this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Log.wtf("postResultRect: ", targetState.toString());
-                mTrackingImage.setVisibility(View.VISIBLE);
-                if ((targetState == ActiveTrackTargetState.CANNOT_CONFIRM)
-                        || (targetState == ActiveTrackTargetState.UNKNOWN)) {
-                    iv.setImageResource(R.drawable.visual_track_cannotconfirm);
-                } else if (targetState == ActiveTrackTargetState.WAITING_FOR_CONFIRMATION) {
-                    iv.setImageResource(R.drawable.visual_track_needconfirm);
-                } else if (targetState == ActiveTrackTargetState.TRACKING_WITH_LOW_CONFIDENCE) {
-                    iv.setImageResource(R.drawable.visual_track_lowconfidence);
-                } else if (targetState == ActiveTrackTargetState.TRACKING_WITH_HIGH_CONFIDENCE) {
-                    iv.setImageResource(R.drawable.visual_track_highconfidence);
-                }
-                iv.setX(l);
-                iv.setY(t);
-                iv.getLayoutParams().width = r - l;
-                iv.getLayoutParams().height = b - t;
-                iv.requestLayout();
-            }
-        });
-    }
 
     //    @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
@@ -573,30 +305,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         });
     }
 
-    /**
-     * Confim Mission by Index
-     */
-    private void startAutoSensingMission() {
-        Log.wtf("startAutoSensingMission:", "Check if trackIndex is valid...");
-        if (trackingIndex != INVAVID_INDEX) {
-            Log.wtf("startAutoSensingMission:", "trackIndex valid!!!");
-            ActiveTrackMission mission = new ActiveTrackMission(null, startMode);
-            mission.setQuickShotMode(quickShotMode);
-            mission.setTargetIndex(trackingIndex);
-            mActiveTrackOperator.startAutoSensingMission(mission, new CommonCallbacks.CompletionCallback() {
-                @Override
-                public void onResult(DJIError error) {
-                    if (error == null) {
-                        setResultToToast("Accept Confim index: " + trackingIndex + " Success!");
-                        trackingIndex = INVAVID_INDEX;
-                    } else {
-                        setResultToToast(error.getDescription());
-                    }
-                }
-            });
-        }
-    }
-
 
     private void switchStorageLocation(final SettingsDefinitions.StorageLocation storageLocation) {
         KeyManager keyManager = KeyManager.getInstance();
@@ -628,28 +336,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             });
         }
     }
-    /**
-     * Clear MultiTracking View
-     */
-
-    private void clearCurrentView() {
-        if (targetViewHashMap != null && !targetViewHashMap.isEmpty()) {
-            Iterator<Map.Entry<Integer, MultiTrackingView>> it = targetViewHashMap.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<Integer, MultiTrackingView> entry = it.next();
-                final MultiTrackingView view = entry.getValue();
-                it.remove();
-                ChalmersDemo.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mBgLayout.removeView(view);
-                    }
-                });
-            }
-        }
-    }
-
-
     private void initFlightController() {
 
         BaseProduct product = DJIDemoApplication.getProductInstance();
@@ -705,6 +391,17 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             if (product instanceof Aircraft) {
                 gimbal = ((Aircraft) product).getGimbal();
                 camera = ((Aircraft) product).getCamera();
+
+                gimbal.setStateCallback(new GimbalState.Callback() {
+                    @Override
+                    public void onUpdate(GimbalState gimbalState) {
+                        Attitude attitude = gimbalState.getAttitudeInDegrees();
+                        mGimbalPitch = attitude.getPitch();
+                        mGimbalYaw = attitude.getYaw();
+                        mGimbalRoll = attitude.getRoll();
+                    }
+                });
+
             }
         }
     }
@@ -762,71 +459,60 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     }
 
 
-    @Override
-    public void onUpdate(ActiveTrackMissionEvent event) {
-        Log.wtf(TAG, "OnUpdate");
-        StringBuffer sb = new StringBuffer();
-        String errorInformation = (event.getError() == null ? "null" : event.getError().getDescription()) + "\n";
-        String currentState = event.getCurrentState() == null ? "null" : event.getCurrentState().getName();
-        String previousState = event.getPreviousState() == null ? "null" : event.getPreviousState().getName();
+    public void onExecutionUpdate(WaypointMissionExecutionEvent event) {
+        // Handle execution updates here
+        WaypointExecutionProgress progress = event.getProgress();
+        assert progress != null;
+        if (progress.isWaypointReached) {
 
-        ActiveTrackTargetState targetState = ActiveTrackTargetState.UNKNOWN;
-        if (event.getTrackingState() != null) {
-            Log.wtf("onUpdate: ", "Tracking state is confirmed!!");
-            targetState = event.getTrackingState().getState();
-        }
-        Utils.addLineToSB(sb, "CurrentState: ", currentState);
-        Utils.addLineToSB(sb, "PreviousState: ", previousState);
-        Utils.addLineToSB(sb, "TargetState: ", targetState);
-        Utils.addLineToSB(sb, "Error:", errorInformation);
+            // Get gimbal rotation values for the reached waypoint
+            float newPitch = mGimbalPitch + 5;
+            float newYaw = mGimbalYaw + 1;
 
-        Object value = KeyManager.getInstance().getValue(trackModeKey);
-        if (value instanceof ActiveTrackMode) {
-            Utils.addLineToSB(sb, "TrackingMode:", value.toString());
-        }
+            // Create a rotation object with the specified values
+            Rotation rot = new Rotation.Builder()
+                    .pitch(newPitch)
+                    .yaw(newYaw)
+                    .roll(mGimbalRoll)
+                    .mode(RotationMode.ABSOLUTE_ANGLE)
+                    .build();
 
-        ActiveTrackTrackingState trackingState = event.getTrackingState();
-        if (trackingState != null) {
-            final SubjectSensingState[] targetSensingInformations = trackingState.getAutoSensedSubjects();
-            if (targetSensingInformations != null) {
-                for (SubjectSensingState subjectSensingState : targetSensingInformations) {
-                    RectF trackingRect = subjectSensingState.getTargetRect();
-                    if (trackingRect != null) {
-                        Utils.addLineToSB(sb, "Rect center x: ", trackingRect.centerX());
-                        Utils.addLineToSB(sb, "Rect center y: ", trackingRect.centerY());
-                        Utils.addLineToSB(sb, "Rect Width: ", trackingRect.width());
-                        Utils.addLineToSB(sb, "Rect Height: ", trackingRect.height());
-                        Utils.addLineToSB(sb, "Reason", trackingState.getReason().name());
-                        Log.wtf("Get Reason", trackingState.getReason().name());
-                        Utils.addLineToSB(sb, "Target Index: ", subjectSensingState.getIndex());
-                        Utils.addLineToSB(sb, "Target Type", subjectSensingState.getTargetType().name());
-                        Log.wtf("Target Type", subjectSensingState.getTargetType().name());
-                        Utils.addLineToSB(sb, "Target State", subjectSensingState.getState().name());
-                        isAutoSensingSupported = true;
-                    }
+            // Rotate the gimbal to the specified angles
+            gimbal.rotate(rot, new CommonCallbacks.CompletionCallback() {
+                @Override
+                public void onResult(DJIError error) {
+                    // Handle gimbal rotation error
+                    Log.wtf(TAG, "Gimbal rotation:" + (error == null ? "Successfully" : error.getDescription()));
                 }
-            } else {
-                RectF trackingRect = trackingState.getTargetRect();
-                if (trackingRect != null) {
-                    Utils.addLineToSB(sb, "Rect center x: ", trackingRect.centerX());
-                    Utils.addLineToSB(sb, "Rect center y: ", trackingRect.centerY());
-                    Utils.addLineToSB(sb, "Rect Width: ", trackingRect.width());
-                    Utils.addLineToSB(sb, "Rect Height: ", trackingRect.height());
-                    Utils.addLineToSB(sb, "Reason", trackingState.getReason().name());
-                    Log.wtf("Get Reason", trackingState.getReason().name());
-                    Utils.addLineToSB(sb, "Target Index: ", trackingState.getTargetIndex());
-                    Utils.addLineToSB(sb, "Target Type", trackingState.getType().name());
-                    Log.wtf("Target Type", trackingState.getType().name());
-                    Utils.addLineToSB(sb, "Target State", trackingState.getState().name());
-                    isAutoSensingSupported = false;
-                }
-                clearCurrentView();
-            }
+            });
         }
-
-        updateActiveTrackRect(mTrackingImage, event);
-        updateButtonVisibility(event);
     }
+
+
+    @Override
+    public void onDownloadUpdate(WaypointMissionDownloadEvent event) {
+        // Handle download updates here
+        Log.wtf(TAG, "WaypointMission download was updated");
+    }
+
+    @Override
+    public void onUploadUpdate(WaypointMissionUploadEvent event) {
+        // Handle upload updates here
+        Log.wtf(TAG, "WaypointMission was uploaded");
+    }
+
+    @Override
+    public void onExecutionStart() {
+        // Handle execution start here
+        Log.wtf(TAG, "WaypointMission was started");
+    }
+
+    @Override
+    public void onExecutionFinish(DJIError error) {
+        // Handle execution finish here
+        Log.wtf(TAG, "WaypointMission has finished");
+    }
+
 
     protected void onProductChange() {
         initPreviewer();
@@ -931,24 +617,24 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 public void run() {
 
                     Log.wtf("TrajName: ", drone.getTrajectoryHeader().getTrajectoryName());
-                    TrajectoryWaypointVector traj =  drone.getTrajectory();
+                    TrajectoryWaypointVector traj = drone.getTrajectory();
                     waypointSettings.clear();
 
                     //Reduce points in traj if to large (99 max amount of waypoints)
-                    if(traj.size() > 9999){
+                    if (traj.size() > 9999) {
                         double epsilon = 0.001;
-                        do{
+                        do {
                             drone.reducePoints(epsilon);
                             epsilon += 0.001;
                             setResultToToast("reducing traj");
-                        }while (drone.getReducedTraj().size() > 99 && epsilon < 0.06);
+                        } while (drone.getReducedTraj().size() > 99 && epsilon < 0.06);
                         Log.wtf("newTraj", String.valueOf(drone.getReducedTraj().size()));
                         waypointSettings.clear();
                         setResultToToast("peucker Traj: " + String.valueOf(drone.getReducedTraj().size()));
                         drone.removePointsToClose();
                         setResultToToast("remove points to close: " + String.valueOf(drone.getReducedTraj().size()));
                         generateWaypointsFromTraj(new LatLng(drone.getOrigin().getLatitude_deg(), drone.getOrigin().getLongitude_deg()), drone.getReducedTraj()); //Use reduced
-                    }else{
+                    } else {
                         waypointSettings.clear();
                         drone.reducedTraj = drone.getTrajectory(); //Put the non douglas-peucker:ed traj in
                         setResultToToast("non reduced Traj: " + String.valueOf(drone.getReducedTraj().size()));
@@ -980,7 +666,8 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 @Override
                 public void run() {
                     resumeWaypointMission();
-                }});
+                }
+            });
             Log.wtf("Error", "Running");
             lastDroneState = "Running";
             updateStateButton(lastDroneState, Color.RED);
@@ -998,12 +685,14 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 @Override
                 public void run() {
                     stopWaypointMission();
-                }});
+                }
+            });
             updateStateButton(lastDroneState, Color.BLACK);
             stopDroneRecording();
         }
     }
-    public void sendMonr(){
+
+    public void sendMonr() {
         double isoLat = drone.getOrigin().getLatitude_deg();
         double isoLog = drone.getOrigin().getLongitude_deg();
 
@@ -1021,7 +710,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         monrPos.setIsZcoordValid(true);
         monrPos.setIsPositionValid(true);
 
-        monrPos.setHeading_rad(headingToYaw(flightController.getState().getAttitude().yaw) * Math.PI/180);
+        monrPos.setHeading_rad(headingToYaw(flightController.getState().getAttitude().yaw) * Math.PI / 180);
         monrPos.setIsHeadingValid(true);
         drone.setPosition(monrPos);
 
@@ -1202,12 +891,13 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     }
 
     public WaypointMissionOperator getWaypointMissionOperator() {
-        if (instance == null) {
+        if (waypointInstance == null) {
             if (DJISDKManager.getInstance().getMissionControl() != null) {
-                instance = DJISDKManager.getInstance().getMissionControl().getWaypointMissionOperator();
+                waypointInstance = DJISDKManager.getInstance().getMissionControl().getWaypointMissionOperator();
+                waypointInstance.addListener(this);
             }
         }
-        return instance;
+        return waypointInstance;
     }
 
     private void configWayPointMission() {
@@ -1302,8 +992,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 setResultToToast("Initializing landing: " + (error == null ? "Success" : error.getDescription()));
             }
         });
-
-        if (djiFlightControllerCurrentState.isLandingConfirmationNeeded()) {
+        if (flightController.getState().isLandingConfirmationNeeded()) {
             flightController.confirmLanding(new CommonCallbacks.CompletionCallback() {
                 @Override
                 public void onResult(DJIError error) {
@@ -1325,316 +1014,31 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         return result;
     }
 
-    /**
-     * Update ActiveTrack Rect
-     *
-     * @param iv
-     * @param event
-     */
-    private void updateActiveTrackRect(final ImageView iv, final ActiveTrackMissionEvent event) {
-        if (iv == null || event == null) {
-            return;
-        }
 
-        ActiveTrackTrackingState trackingState = event.getTrackingState();
-        if (trackingState != null) {
-            if (trackingState.getAutoSensedSubjects() != null) {
-                final SubjectSensingState[] targetSensingInformations = trackingState.getAutoSensedSubjects();
-                runOnUiThread(new Runnable() {
+    private void changeGimbalAngles(float pitch, float yaw, float roll) {
+        if (gimbal == null) return;
+        Log.wtf("GIMBAL", "Changing gimbal angle...");
+
+        gimbal.rotate(new Rotation.Builder()
+                        .pitch(pitch)
+                        .yaw(yaw)
+                        .roll(roll)
+                        .time(0.05)
+                        .mode(RotationMode.RELATIVE_ANGLE)
+                        .build()
+                , new CommonCallbacks.CompletionCallback() {
                     @Override
-                    public void run() {
-                        updateMultiTrackingView(targetSensingInformations);
-                    }
-                });
-            } else {
-                RectF trackingRect = trackingState.getTargetRect();
-                ActiveTrackTargetState trackTargetState = trackingState.getState();
-                postResultRect(iv, trackingRect, trackTargetState);
-            }
-        }
-
-    }
-
-    private void updateButtonVisibility(final ActiveTrackMissionEvent event) {
-        ActiveTrackState state = event.getCurrentState();
-        Log.wtf("updateButtonVisibilty: ", state.toString());
-        if (state == ActiveTrackState.AUTO_SENSING ||
-                state == ActiveTrackState.AUTO_SENSING_FOR_QUICK_SHOT ||
-                state == ActiveTrackState.WAITING_FOR_CONFIRMATION) {
-            ChalmersDemo.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-//                    mStopBtn.setVisibility(View.VISIBLE);
-//                    mStopBtn.setClickable(true);
-//                    mConfirmBtn.setVisibility(View.VISIBLE);
-//                    mConfirmBtn.setClickable(true);
-//                    mRejectBtn.setVisibility(View.VISIBLE);
-//                    mRejectBtn.setClickable(true);
-//                    mConfigBtn.setVisibility(View.GONE);
-                }
-            });
-        } else if (state == ActiveTrackState.AIRCRAFT_FOLLOWING ||
-                state == ActiveTrackState.ONLY_CAMERA_FOLLOWING ||
-                state == ActiveTrackState.FINDING_TRACKED_TARGET ||
-                state == ActiveTrackState.CANNOT_CONFIRM ||
-                state == ActiveTrackState.PERFORMING_QUICK_SHOT) {
-            Log.wtf(TAG, "Tihi");
-//            ChalmersDemo.this.runOnUiThread(new Runnable() {
-//
-//                @Override
-//                public void run() {
-//                    mStopBtn.setVisibility(View.VISIBLE);
-//                    mStopBtn.setClickable(true);
-//                    mConfirmBtn.setVisibility(View.INVISIBLE);
-//                    mConfirmBtn.setClickable(false);
-//                    mRejectBtn.setVisibility(View.VISIBLE);
-//                    mRejectBtn.setClickable(true);
-//                    mConfigBtn.setVisibility(View.GONE);
-//                }
-//            });
-        } else {
-            ChalmersDemo.this.runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-//                    mStopBtn.setVisibility(View.INVISIBLE);
-//                    mStopBtn.setClickable(false);
-//                    mConfirmBtn.setVisibility(View.INVISIBLE);
-//                    mConfirmBtn.setClickable(false);
-//                    mRejectBtn.setVisibility(View.INVISIBLE);
-//                    mRejectBtn.setClickable(false);
-                    mTrackingImage.setVisibility(View.INVISIBLE);
-                }
-            });
-        }
-    }
-
-    /**
-     * PostMultiResult
-     *
-     * @param iv
-     * @param rectF
-     * @param information
-     */
-    private void postMultiResultRect(final MultiTrackingView iv, final RectF rectF,
-                                     final SubjectSensingState information) {
-        View parent = (View) iv.getParent();
-        RectF trackingRect = rectF;
-
-        final int l = (int) ((trackingRect.centerX() - trackingRect.width() / 2) * parent.getWidth());
-        final int t = (int) ((trackingRect.centerY() - trackingRect.height() / 2) * parent.getHeight());
-        final int r = (int) ((trackingRect.centerX() + trackingRect.width() / 2) * parent.getWidth());
-        final int b = (int) ((trackingRect.centerY() + trackingRect.height() / 2) * parent.getHeight());
-
-        ChalmersDemo.this.runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-                mTrackingImage.setVisibility(View.INVISIBLE);
-                iv.setX(l);
-                iv.setY(t);
-                iv.getLayoutParams().width = r - l;
-                iv.getLayoutParams().height = b - t;
-                iv.requestLayout();
-                iv.updateView(information);
-            }
-        });
-    }
-
-    /**
-     * Update MultiTrackingView
-     *
-     * @param targetSensingInformations
-     */
-    private void updateMultiTrackingView(final SubjectSensingState[] targetSensingInformations) {
-        Log.wtf("updateMultiTrackingView: ", "Currently running multiple events");
-        ArrayList<Integer> indexs = new ArrayList<>();
-        for (SubjectSensingState target : targetSensingInformations) {
-            indexs.add(target.getIndex());
-            if (targetViewHashMap.containsKey(target.getIndex())) {
-
-                MultiTrackingView targetView = targetViewHashMap.get(target.getIndex());
-                postMultiResultRect(targetView, target.getTargetRect(), target);
-            } else {
-                MultiTrackingView trackingView = new MultiTrackingView(ChalmersDemo.this);
-                mBgLayout.addView(trackingView, layoutParams);
-                targetViewHashMap.put(target.getIndex(), trackingView);
-            }
-        }
-
-        ArrayList<Integer> missingIndexs = new ArrayList<>();
-        for (Integer key : targetViewHashMap.keySet()) {
-            boolean isDisappeared = true;
-            for (Integer index : indexs) {
-                if (index.equals(key)) {
-                    isDisappeared = false;
-                    break;
-                }
-            }
-
-            if (isDisappeared) {
-                missingIndexs.add(key);
-            }
-        }
-
-        for (Integer i : missingIndexs) {
-            MultiTrackingView view = targetViewHashMap.remove(i);
-            mBgLayout.removeView(view);
-        }
-    }
-
-
-    /**
-     * Enable MultiTracking
-     *
-     * @param isChecked
-     */
-    private void setAutoSensingEnabled(final boolean isChecked) {
-        if (mActiveTrackOperator != null) {
-            if (isChecked) {
-                startMode = ActiveTrackMode.TRACE; //Ändrare .TRACE till .SPOTLIGHT för att vi bara vill att kameran ska röra sig
-                // UPDATE: Detta funkade inte så just nu vinklar sig drönaren men man manuellt styr drönaren vart den ska åka
-                mActiveTrackOperator.enableAutoSensing(new CommonCallbacks.CompletionCallback() {
-                    @Override
-                    public void onResult(DJIError error) {
-                        if (error != null) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mAutoSensingSw.setChecked(!isChecked);
-                                }
-                            });
+                    public void onResult(DJIError djiError) {
+                        if (djiError == null) {
+                            Log.d("GIMBAL", "rotate gimbal success");
+//                    showToast("rotate gimbal success");
+                        } else {
+                            Log.d("GIMBAL", "rotate gimbal error " + djiError.getDescription());
+//                    showToast(djiError.getDescription());
                         }
-                        setResultToToast("Set AutoSensing Enabled " + (error == null ? "Success!" : error.getDescription()));
                     }
                 });
-            } else {
-                disableAutoSensing();
-            }
-        }
-    }
-    /**
-     * Disable AutoSensing
-     */
-    private void disableAutoSensing() {
-        if (mActiveTrackOperator != null) {
-            mActiveTrackOperator.disableAutoSensing(new CommonCallbacks.CompletionCallback() {
-                @Override
-                public void onResult(DJIError error) {
-                    if (error == null) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mConfirmBtn.setVisibility(View.INVISIBLE);
-                                mStopBtn.setVisibility(View.INVISIBLE);
-                                mRejectBtn.setVisibility(View.INVISIBLE);
-                                mConfigBtn.setVisibility(View.VISIBLE);
-                                isAutoSensingSupported = false;
-                            }
-                        });
-                        clearCurrentView();
-                    }
-                    setResultToToast(error == null ? "Disable Auto Sensing Success!" : error.getDescription());
-                }
-            });
-        }
-    }
-
-    private boolean isSDCardReady(int index) {
-        Log.wtf(TAG, "isSDCardReady");
-        KeyManager keyManager = KeyManager.getInstance();
-
-        return ((Boolean) keyManager.getValue(CameraKey.create(CameraKey.SDCARD_IS_INSERTED, index))
-                && !(Boolean) keyManager.getValue(CameraKey.create(CameraKey.SDCARD_IS_INITIALIZING, index))
-                && !(Boolean) keyManager.getValue(CameraKey.create(CameraKey.SDCARD_IS_READ_ONLY, index))
-                && !(Boolean) keyManager.getValue(CameraKey.create(CameraKey.SDCARD_HAS_ERROR, index))
-                && !(Boolean) keyManager.getValue(CameraKey.create(CameraKey.SDCARD_IS_FULL, index))
-                && !(Boolean) keyManager.getValue(CameraKey.create(CameraKey.SDCARD_IS_BUSY, index))
-                && !(Boolean) keyManager.getValue(CameraKey.create(CameraKey.SDCARD_IS_FORMATTING, index))
-                && !(Boolean) keyManager.getValue(CameraKey.create(CameraKey.SDCARD_IS_INVALID_FORMAT, index))
-                && (Boolean) keyManager.getValue(CameraKey.create(CameraKey.SDCARD_IS_VERIFIED, index))
-                && (Long) keyManager.getValue(CameraKey.create(CameraKey.SDCARD_AVAILABLE_CAPTURE_COUNT, index)) > 0L
-                && (Integer) keyManager.getValue(CameraKey.create(CameraKey.SDCARD_AVAILABLE_RECORDING_TIME_IN_SECONDS, index)) > 0);
     }
 
 
-
-    /**
-     * determine Interal Storage is or not Ready
-     *
-     * @param index
-     * @return
-     */
-
-
-    private boolean isInteralStorageReady(int index) {
-        Log.wtf(TAG, "isInteralStorageReady");
-        KeyManager keyManager = KeyManager.getInstance();
-
-        boolean isInternalSupported = (boolean)
-                keyManager.getValue(CameraKey.create(CameraKey.IS_INTERNAL_STORAGE_SUPPORTED, index));
-        if (isInternalSupported) {
-            return ((Boolean) keyManager.getValue(CameraKey.create(CameraKey.INNERSTORAGE_IS_INSERTED, index))
-                    && !(Boolean) keyManager.getValue(CameraKey.create(CameraKey.INNERSTORAGE_IS_INITIALIZING, index))
-                    && !(Boolean) keyManager.getValue(CameraKey.create(CameraKey.INNERSTORAGE_IS_READ_ONLY, index))
-                    && !(Boolean) keyManager.getValue(CameraKey.create(CameraKey.INNERSTORAGE_HAS_ERROR, index))
-                    && !(Boolean) keyManager.getValue(CameraKey.create(CameraKey.INNERSTORAGE_IS_FULL, index))
-                    && !(Boolean) keyManager.getValue(CameraKey.create(CameraKey.INNERSTORAGE_IS_BUSY, index))
-                    && !(Boolean) keyManager.getValue(CameraKey.create(CameraKey.INNERSTORAGE_IS_FORMATTING, index))
-                    && !(Boolean) keyManager.getValue(CameraKey.create(CameraKey.INNERSTORAGE_IS_INVALID_FORMAT, index))
-                    && (Boolean) keyManager.getValue(CameraKey.create(CameraKey.INNERSTORAGE_IS_VERIFIED, index))
-                    && (Long) keyManager.getValue(CameraKey.create(CameraKey.INNERSTORAGE_AVAILABLE_CAPTURE_COUNT, index)) > 0L
-                    && (Integer) keyManager.getValue(CameraKey.create(CameraKey.INNERSTORAGE_AVAILABLE_RECORDING_TIME_IN_SECONDS, index)) > 0);
-        }
-        return false;
-    }
-
-
-
-    /**
-     * Check Storage States
-     */
-
-
-    private void checkStorageStates() {
-        Log.wtf(TAG, "checkStorageStates");
-        KeyManager keyManager = KeyManager.getInstance();
-        DJIKey storageLocationkey = CameraKey.create(CameraKey.CAMERA_STORAGE_LOCATION, MAIN_CAMERA_INDEX);
-        Object storageLocationObj = keyManager.getValue(storageLocationkey);
-        SettingsDefinitions.StorageLocation storageLocation = SettingsDefinitions.StorageLocation.INTERNAL_STORAGE;
-
-        if (storageLocationObj instanceof SettingsDefinitions.StorageLocation){
-            storageLocation = (SettingsDefinitions.StorageLocation) storageLocationObj;
-        }
-
-        if (storageLocation == SettingsDefinitions.StorageLocation.INTERNAL_STORAGE) {
-            if (!isInteralStorageReady(MAIN_CAMERA_INDEX) && isSDCardReady(MAIN_CAMERA_INDEX)) {
-                switchStorageLocation(SettingsDefinitions.StorageLocation.SDCARD);
-            }
-        }
-
-        if (storageLocation == SettingsDefinitions.StorageLocation.SDCARD) {
-            if (!isSDCardReady(MAIN_CAMERA_INDEX) && isInteralStorageReady(MAIN_CAMERA_INDEX)) {
-                switchStorageLocation(SettingsDefinitions.StorageLocation.INTERNAL_STORAGE);
-            }
-        }
-
-        DJIKey isRecordingKey = CameraKey.create(CameraKey.IS_RECORDING, MAIN_CAMERA_INDEX);
-        Object isRecording = keyManager.getValue(isRecordingKey);
-        if (isRecording instanceof Boolean) {
-            if (((Boolean) isRecording).booleanValue()) {
-                keyManager.performAction(CameraKey.create(CameraKey.STOP_RECORD_VIDEO, MAIN_CAMERA_INDEX), new ActionCallback() {
-                    @Override
-                    public void onSuccess() {
-                        setResultToToast("Stop Recording Success!");
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull DJIError error) {
-                        setResultToToast("Stop Recording Fail，Error " + error.getDescription());
-                    }
-                });
-            }
-        }
-    }
 }
