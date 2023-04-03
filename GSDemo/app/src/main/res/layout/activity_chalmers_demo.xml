@@ -8,7 +8,6 @@
     android:textAlignment="center"
     tools:context=".ChalmersDemo">
 
-
     <LinearLayout
         android:id="@+id/topLayout"
         android:layout_width="match_parent"

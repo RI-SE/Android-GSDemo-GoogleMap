@@ -2,6 +2,7 @@ package com.dji.GSDemo.GoogleMap;
 
 import android.Manifest;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.os.Build;
@@ -10,16 +11,9 @@ import android.util.Log;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.SlidingDrawer;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
@@ -38,23 +32,26 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.CoordinateTransform;
 import org.locationtech.proj4j.CoordinateTransformFactory;
 import org.locationtech.proj4j.ProjCoordinate;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
+import org.opencv.core.MatOfRect;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
+import org.opencv.objdetect.CascadeClassifier;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-import dji.common.camera.SettingsDefinitions;
 import dji.common.error.DJIError;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.common.flightcontroller.GPSSignalLevel;
-import dji.common.gimbal.Attitude;
-import dji.common.gimbal.GimbalState;
+import dji.common.gimbal.GimbalMode;
 import dji.common.gimbal.Rotation;
 import dji.common.gimbal.RotationMode;
-import dji.common.mission.activetrack.ActiveTrackMission;
-import dji.common.mission.activetrack.ActiveTrackMode;
-import dji.common.mission.activetrack.QuickShotMode;
 import dji.common.mission.waypoint.Waypoint;
 import dji.common.mission.waypoint.WaypointExecutionProgress;
 import dji.common.mission.waypoint.WaypointMission;
@@ -68,11 +65,8 @@ import dji.common.mission.waypoint.WaypointMissionUploadEvent;
 import dji.common.model.LocationCoordinate2D;
 import dji.common.product.Model;
 import dji.common.util.CommonCallbacks;
-import dji.keysdk.CameraKey;
 import dji.keysdk.DJIKey;
 import dji.keysdk.FlightControllerKey;
-import dji.keysdk.KeyManager;
-import dji.keysdk.callback.SetCallback;
 import dji.midware.media.DJIVideoDataRecver;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.camera.Camera;
@@ -80,8 +74,6 @@ import dji.sdk.camera.VideoFeeder;
 import dji.sdk.codec.DJICodecManager;
 import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.gimbal.Gimbal;
-import dji.sdk.mission.activetrack.ActiveTrackMissionOperatorListener;
-import dji.sdk.mission.activetrack.ActiveTrackOperator;
 import dji.sdk.mission.waypoint.WaypointMissionOperator;
 import dji.sdk.mission.waypoint.WaypointMissionOperatorListener;
 import dji.sdk.products.Aircraft;
@@ -98,12 +90,14 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     private final DJIKey trackModeKey = FlightControllerKey.createFlightAssistantKey(FlightControllerKey.ACTIVE_TRACK_MODE);
     public CRSFactory crsFactory = new CRSFactory();
     public CoordinateReferenceSystem WGS84 = crsFactory.createFromParameters("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
-    protected VideoFeeder.VideoDataListener mReceivedVideoDataListener = null;
+    protected VideoFeeder.VideoDataListener mReceivedVideoDataListener;
     View decorView;
     TextureView mVideoSurface;
     float mGimbalRoll;
     float mGimbalYaw;
     float mGimbalPitch;
+    private org.opencv.android.Utils UtilsCV;
+    private com.dji.GSDemo.GoogleMap.Utils Utils;
     private String lastDroneState = "";
     private IsoDrone drone;
     private FlightController flightController;
@@ -119,7 +113,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     private TextView text_gps, text_lat, text_lon, text_alt;
     private Button testcircle, config, upload, start, stop, land;
     private Button btn_atos_con, btn_drone_con, btn_ip_address, btn_drone_state, clear_wps;
-
 
     private double droneLocationLat = 57.688859d, droneLocationLng = 11.978795d, droneAltitude = 0d; // Johanneberg
     private float mSpeed = 10.0f;
@@ -138,7 +131,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     public double getDroneAltitude() {
         return droneAltitude;
     }
-
 
     @Override
     protected void onResume() {
@@ -170,7 +162,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         }
 
         super.onDestroy();
-//        unregisterReceiver(mReceiver);
+//        unregisterReceiver(mReceiver) ;
 //        removeListener();
     }
 
@@ -242,6 +234,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         text_lat = (TextView) findViewById(R.id.text_lat);
         text_lon = (TextView) findViewById(R.id.text_lon);
         text_alt = (TextView) findViewById(R.id.text_alt);
+        mVideoSurface = (TextureView) findViewById(R.id.video_previewer_surface);
 
 
         testcircle = (Button) findViewById(R.id.testcircle);
@@ -266,20 +259,22 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     }
 
 
-    //    @Override
+    @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         Log.e(TAG, "onSurfaceTextureAvailable");
+
+
         if (mCodecManager == null) {
             mCodecManager = new DJICodecManager(this, surface, width, height);
         }
     }
 
-    //    @Override
+    @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
         Log.e(TAG, "onSurfaceTextureSizeChanged");
     }
 
-    //    @Override
+    @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
 
         Log.e(TAG, "onSurfaceTextureDestroyed");
@@ -291,7 +286,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         return false;
     }
 
-    //    @Override
+    @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
     }
 
@@ -305,37 +300,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         });
     }
 
-
-    private void switchStorageLocation(final SettingsDefinitions.StorageLocation storageLocation) {
-        KeyManager keyManager = KeyManager.getInstance();
-        DJIKey storageLoactionkey = CameraKey.create(CameraKey.CAMERA_STORAGE_LOCATION, MAIN_CAMERA_INDEX);
-
-        if (storageLocation == SettingsDefinitions.StorageLocation.INTERNAL_STORAGE) {
-            keyManager.setValue(storageLoactionkey, SettingsDefinitions.StorageLocation.SDCARD, new SetCallback() {
-                @Override
-                public void onSuccess() {
-                    setResultToToast("Change to SD card Success!");
-                }
-
-                @Override
-                public void onFailure(@NonNull DJIError error) {
-                    setResultToToast(error.getDescription());
-                }
-            });
-        } else {
-            keyManager.setValue(storageLoactionkey, SettingsDefinitions.StorageLocation.INTERNAL_STORAGE, new SetCallback() {
-                @Override
-                public void onSuccess() {
-                    setResultToToast("Change to Interal Storage Success!");
-                }
-
-                @Override
-                public void onFailure(@NonNull DJIError error) {
-                    setResultToToast(error.getDescription());
-                }
-            });
-        }
-    }
     private void initFlightController() {
 
         BaseProduct product = DJIDemoApplication.getProductInstance();
@@ -392,22 +356,31 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 gimbal = ((Aircraft) product).getGimbal();
                 camera = ((Aircraft) product).getCamera();
 
-                gimbal.setStateCallback(new GimbalState.Callback() {
+                gimbal.setStateCallback((gimbalState) -> {
+//                    synchronized (lock) {
+//                        try {
+//                            lock.notifyAll();
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+                });
+                gimbal.setMode(GimbalMode.FREE, new CommonCallbacks.CompletionCallback() {
                     @Override
-                    public void onUpdate(GimbalState gimbalState) {
-                        Attitude attitude = gimbalState.getAttitudeInDegrees();
-                        mGimbalPitch = attitude.getPitch();
-                        mGimbalYaw = attitude.getYaw();
-                        mGimbalRoll = attitude.getRoll();
+                    public void onResult(DJIError djiError) {
+                        Log.wtf(TAG, "Set gimbal mode to FREE: " + ((djiError == null) ? "Success" : djiError.getDescription()));
                     }
                 });
-
             }
         }
     }
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (OpenCVLoader.initDebug()) Log.wtf("LOADED", "Success");
+        else Log.wtf("LOADED", "Error");
+
         decorView = getWindow().getDecorView();
         decorView.setOnSystemUiVisibilityChangeListener
                 (new View.OnSystemUiVisibilityChangeListener() {
@@ -446,16 +419,53 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         filter.addAction(DJIDemoApplication.FLAG_CONNECTION_CHANGE);
 //        registerReceiver(mReceiver, filter);
 
-        initUI();
-
         mReceivedVideoDataListener = new VideoFeeder.VideoDataListener() {
             @Override
             public void onReceive(byte[] videoBuffer, int size) {
+                Log.e(TAG, "I am running the function!");
                 if (mCodecManager != null) {
-                    mCodecManager.sendDataToDecoder(videoBuffer, size);
+                    Log.wtf(TAG, "I am running detection!");
+                    Mat mat = Imgcodecs.imdecode(new MatOfByte(videoBuffer), Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
+                    Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2GRAY);
+                    // Create a CascadeClassifier object to load the classifier
+                    CascadeClassifier carCascade = new CascadeClassifier("sampledata/humans.xml");
+                    // Detect cars in the image
+                    MatOfRect cars = new MatOfRect();
+                    carCascade.detectMultiScale(mat, cars);
+
+                    Rect[] carsArray = cars.toArray();
+                    for (Rect car : carsArray) {
+                        Log.wtf("DETECTION", "Detected object");
+                        Imgproc.rectangle(mat, new Point(car.x, car.y), new Point(car.x + car.width, car.y + car.height), new Scalar(0, 255, 0), 2);
+                    }
+
+                    // Draw a rectangle in the middle of the screen
+                    int rectWidth = mat.width() / 4;
+                    int rectHeight = mat.height() / 4;
+                    int rectX = (mat.width() - rectWidth) / 2;
+                    int rectY = (mat.height() - rectHeight) / 2;
+                    Imgproc.rectangle(mat, new Point(rectX, rectY), new Point(rectX + rectWidth, rectY + rectHeight), new Scalar(255, 0, 0), 2);
+
+                    // Convert the processed frame to a bitmap and send it to the decoder
+//                    Bitmap bitmap = UtilsCV.bitmapFromMat(mat);
+//                    byte[] imageData = UtilsCV.bitmapToByteArray(bitmap);
+//
+//                    mCodecManager.sendDataToDecoder(imageData, imageData.length);
+
+//                    MatOfByte matOfByte = new MatOfByte();
+//                    Imgcodecs.imencode(".jpg", mat, matOfByte);
+//                    byte[] imageData = matOfByte.toArray();
+
+//                    Mat processedFrame = // your processed frame
+                    Bitmap bitmap = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    byte[] byteArray = stream.toByteArray();
+                    mCodecManager.sendDataToDecoder(byteArray, byteArray.length);
                 }
             }
         };
+        initUI();
     }
 
 
