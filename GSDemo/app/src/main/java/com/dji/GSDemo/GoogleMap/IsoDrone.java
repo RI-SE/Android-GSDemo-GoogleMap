@@ -1,5 +1,7 @@
 package com.dji.GSDemo.GoogleMap;
 
+import static java.lang.Math.round;
+
 import android.util.Log;
 import android.widget.EditText;
 
@@ -9,7 +11,8 @@ import org.locationtech.proj4j.ProjCoordinate;
 public class IsoDrone extends TestObject{
 
     public TrajectoryWaypointVector reducedTraj;
-    private double mReduction = 1;
+    private double mReduction = 1.0;
+    private static int maxNumOfPoints = 99;
    IsoDrone(String ip) {
        super(ip);
 
@@ -109,6 +112,8 @@ public class IsoDrone extends TestObject{
         // Find the point with the maximum distance
         double dmax = 0;
         int index = 0;
+        boolean isColinearY = true;
+        boolean isColinearX = true;
 
         final int start = s;
         final int end = e-1;
@@ -123,10 +128,25 @@ public class IsoDrone extends TestObject{
             final double wx = traj.get(end).getPos().getXCoord_m();
             final double wy = traj.get(end).getPos().getYCoord_m();
             final double d = perpendicularDistance(px, py, vx, vy, wx, wy);
+
+            if (vx != px) isColinearX = false;
+            if (vy != py) isColinearY = false;
             if (d > dmax) {
                 index = i;
                 dmax = d;
             }
+        }
+
+        // IF straight line, just remove points so we get maxSize traj
+        if (isColinearX || isColinearY) {
+            //Only take half traj or we get radius too big error.
+            int multiplier = Math.round(traj.size() / maxNumOfPoints);
+            for (int i = 0; i < traj.size()/2; i+= multiplier) {
+                resultTraj.add(traj.get(i));
+            }
+            //Add endpoint to traj
+//            resultTraj.add(traj.get(end));
+            return;
         }
 
         // If max distance is greater than epsilon, call recursively
