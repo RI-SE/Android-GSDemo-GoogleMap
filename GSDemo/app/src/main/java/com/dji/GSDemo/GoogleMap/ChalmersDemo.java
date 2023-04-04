@@ -182,7 +182,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             case R.id.testcircle: {
                 this.waypointSettings.clear();
                 generateTestCircleCoordinates(new LatLng(droneLocationLat, droneLocationLng), 1, 5.0f, 1, 8, false);
-                deployTraj();
+                deployTraj(false);
                 break;
             }
             case R.id.pauseresume: {
@@ -497,7 +497,9 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     public void onUploadUpdate(WaypointMissionUploadEvent event) {
         // Handle upload updates here
         Log.wtf(TAG, "WaypointMission was updated");
-        updateMissionButton(("Uploading " + event.getProgress().uploadedWaypointIndex + "/" + event.getProgress().totalWaypointCount), Color.CYAN);
+        if (event.getProgress() != null) {
+            updateMissionButton(("Uploading " + event.getProgress().uploadedWaypointIndex + "/" + event.getProgress().totalWaypointCount), Color.CYAN);
+        }
     }
     @Override
     public void onExecutionStart() {
@@ -645,8 +647,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                         generateWaypointsFromTraj(new LatLng(drone.getOrigin().getLatitude_deg(), drone.getOrigin().getLongitude_deg()), drone.reducedTraj); // use set traj
                     }
                     //generateTestCircleCoordinates(new LatLng(droneLocationLat, droneLocationLng), 10, 3, 1,19, true);
-                    deployTraj();
-                    startWaypointMission();
+                    deployTraj(true);
                 }
             });
 
@@ -791,7 +792,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     }
 
 
-    private void deployTraj() {
+    private void deployTraj(boolean startMissoinOnUpload) {
         Log.wtf("Error", "Deploying traj");
         waypointMissionBuilder = new WaypointMission.Builder();
 
@@ -818,7 +819,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         configWayPointMission();
         //TODO Remove?
         startLatLong = new LatLng(droneLocationLat, droneLocationLng);
-        uploadWayPointMission();
+        uploadWayPointMission(startMissoinOnUpload);
     }
 
 
@@ -933,14 +934,17 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         }
     }
 
-    private void uploadWayPointMission() {
+    private void uploadWayPointMission(boolean startMissoinOnUpload) {
         getWaypointMissionOperator().uploadMission(new CommonCallbacks.CompletionCallback() {
             @Override
             public void onResult(DJIError error) {
                 if (error == null) {
                     setResultToToast("Mission upload successfully!");
                     missionUploaded = true;
-//                    startWaypointMission();
+                    if (startMissoinOnUpload) {
+                        startWaypointMission();
+                    }
+
 
                 } else {
                     missionUploaded = false;
