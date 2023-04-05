@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 
-def boostDirPath = "/home/c_oresten/git/Boost-for-Android/build/out/arm64-v8a"
+def boostDirPath = "/home/globee/AndroidStudioProjects/Boost-for-Android/build/out/arm64-v8a"
 def boostLibPath = boostDirPath + "/lib/"
 def boostIncludePath  = boostDirPath + "/include/boost-1_78/"
 
@@ -102,7 +102,6 @@ dependencies {
         //exclude module: 'fly-safe-database'
     })
     implementation 'org.locationtech.proj4j:proj4j:1.1.3'
-    implementation project(path: ':openCV')
     compileOnly 'com.dji:dji-sdk-provided:4.15'
    // compileOnly 'com.dji:dji-sdk-provided:4.15.1'
 

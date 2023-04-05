@@ -2,7 +2,6 @@ package com.dji.GSDemo.GoogleMap;
 
 import android.graphics.Bitmap;
 
-import org.opencv.core.Mat;
 
 import java.io.*;
 import java.net.*;

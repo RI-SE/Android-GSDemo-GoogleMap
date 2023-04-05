@@ -139,9 +139,10 @@ public class IsoDrone extends TestObject{
 
         // IF straight line, just remove points so we get maxSize traj
         if (isColinearX || isColinearY) {
-            //Only take half traj or we get radius too big error.
             int multiplier = Math.round(traj.size() / maxNumOfPoints);
-            for (int i = 0; i < traj.size()/2; i+= multiplier) {
+            //Make sure we are not stuck in infinite loop
+            if (multiplier == 0) multiplier = 1;
+            for (int i = 0; i < traj.size(); i+= multiplier) {
                 resultTraj.add(traj.get(i));
             }
             //Add endpoint to traj

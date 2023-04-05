@@ -32,16 +32,6 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.CoordinateTransform;
 import org.locationtech.proj4j.CoordinateTransformFactory;
 import org.locationtech.proj4j.ProjCoordinate;
-import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
-import org.opencv.core.MatOfRect;
-import org.opencv.core.Point;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
-import org.opencv.objdetect.CascadeClassifier;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -96,7 +86,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     float mGimbalRoll;
     float mGimbalYaw;
     float mGimbalPitch;
-    private org.opencv.android.Utils UtilsCV;
     private com.dji.GSDemo.GoogleMap.Utils Utils;
     private String lastDroneState = "";
     private IsoDrone drone;
@@ -325,6 +314,11 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
                 @Override
                 public void onUpdate(FlightControllerState djiFlightControllerCurrentState) {
+
+                    if(getWaypointMissionOperator() != null) {
+                        Log.wtf("Error", getWaypointMissionOperator().getCurrentState().toString());
+                    }
+
                     GPSSignalLevel gps = djiFlightControllerCurrentState.getGPSSignalLevel();
                     droneLocationLat = djiFlightControllerCurrentState.getAircraftLocation().getLatitude();
                     droneLocationLng = djiFlightControllerCurrentState.getAircraftLocation().getLongitude();
@@ -375,8 +369,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (OpenCVLoader.initDebug()) Log.e("LOADED", "Success");
-        else Log.e("LOADED", "Error");
 
         decorView = getWindow().getDecorView();
         decorView.setOnSystemUiVisibilityChangeListener
@@ -421,33 +413,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 Log.e("VIDEO", "I am running the function!");
                 setResultToToast("WE ARE RUNNING ON RECEIVE");
                 if (mCodecManager != null) {
-                    Log.e("VIDEO", "I am running detection!");
-                    Mat mat = Imgcodecs.imdecode(new MatOfByte(videoBuffer), Imgcodecs.IMREAD_UNCHANGED);
-                    Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2GRAY);
-                    // Create a CascadeClassifier object to load the classifier
-                    CascadeClassifier carCascade = new CascadeClassifier("sampledata/humans.xml");
-                    // Detect cars in the image
-                    MatOfRect cars = new MatOfRect();
-                    carCascade.detectMultiScale(mat, cars);
-
-                    Rect[] carsArray = cars.toArray();
-                    for (Rect car : carsArray) {
-                        Log.wtf("DETECTION", "Detected object");
-                        Imgproc.rectangle(mat, new Point(car.x, car.y), new Point(car.x + car.width, car.y + car.height), new Scalar(0, 255, 0), 2);
-                    }
-
-                    // Draw a rectangle in the middle of the screen
-                    int rectWidth = mat.width() / 4;
-                    int rectHeight = mat.height() / 4;
-                    int rectX = (mat.width() - rectWidth) / 2;
-                    int rectY = (mat.height() - rectHeight) / 2;
-                    Imgproc.rectangle(mat, new Point(rectX, rectY), new Point(rectX + rectWidth, rectY + rectHeight), new Scalar(255, 0, 0), 2);
-
-                    Bitmap bitmap = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                    byte[] byteArray = stream.toByteArray();
-                    mCodecManager.sendDataToDecoder(byteArray, byteArray.length);
+                    mCodecManager.sendDataToDecoder(videoBuffer, size);
                 }
             }
         };
@@ -463,6 +429,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         updateMissionButton(("Running " + progress.targetWaypointIndex + "/" + progress.totalWaypointCount),Color.CYAN);
         assert progress != null;
         if (progress.isWaypointReached) {
+            Log.wtf("Error", "We reached a waypoint");
 
             //If we armed and went to first waypoint, stop and wait for running
             if (progress.targetWaypointIndex == 0 && drone.getCurrentStateName() == "Armed") {
@@ -816,8 +783,8 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         Log.wtf("Error", "Deploying traj");
         waypointMissionBuilder = new WaypointMission.Builder();
 
-        for (int point = 0; point < 10; point++) {
-//        for (int point = 0; point < this.waypointSettings.size(); point++) {
+//        for (int point = 0; point < 10; point++) {
+        for (int point = 0; point < this.waypointSettings.size(); point++) {
             Waypoint wp = new Waypoint();
             wp.coordinate = new LocationCoordinate2D(this.waypointSettings.get(point).geo.y, this.waypointSettings.get(point).geo.x);
             wp.altitude = (float) this.waypointSettings.get(point).geo.z;
