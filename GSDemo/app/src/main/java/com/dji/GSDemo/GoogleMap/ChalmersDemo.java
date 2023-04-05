@@ -330,6 +330,9 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                     droneLocationLng = djiFlightControllerCurrentState.getAircraftLocation().getLongitude();
                     droneAltitude = djiFlightControllerCurrentState.getAircraftLocation().getAltitude();
 
+                    if (getWaypointMissionOperator() != null){
+                        Log.wtf("ERROR", getWaypointMissionOperator().getCurrentState().toString());
+                    }
 
                     if (text_lon != null && text_lat != null && text_gps != null && text_alt != null) {
                         runOnUiThread(new Runnable() {
