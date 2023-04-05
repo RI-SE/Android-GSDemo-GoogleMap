@@ -110,6 +110,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     private LatLng startLatLong;
     private boolean missionUploaded = false;
     private WaypointMissionExecuteState waypointState;
+    private boolean first;
 
     public double getDroneLocationLat() {
         return droneLocationLat;
@@ -246,7 +247,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         stop.setOnClickListener(this);
         land.setOnClickListener(this);
 
-
         if (null != mVideoSurface) {
 //            mVideoSurface.setSurfaceTextureListener(this);
 
@@ -316,10 +316,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
                 @Override
                 public void onUpdate(FlightControllerState djiFlightControllerCurrentState) {
-
-                    if(getWaypointMissionOperator() != null) {
-                        Log.wtf("Error", getWaypointMissionOperator().getCurrentState().toString());
-                    }
 
                     GPSSignalLevel gps = djiFlightControllerCurrentState.getGPSSignalLevel();
                     droneLocationLat = djiFlightControllerCurrentState.getAircraftLocation().getLatitude();
@@ -436,7 +432,9 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             setResultToToast("WE REACHED A WAYPOINT");
 
             //If we armed and went to first waypoint, stop and wait for running
-            if (progress.targetWaypointIndex == 0 && drone.getCurrentStateName() == "Armed") {
+//            if (progress.targetWaypointIndex == 0 && drone.getCurrentStateName() == "Armed") {
+            if (first) {
+                first=false;
                 pauseWaypointMission();
                 setResultToToast("FIRST WAYPOINT REACHED");
             }
@@ -769,13 +767,14 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             WaypointSetting wps = new WaypointSetting(coordCartToGeo(origin, new ProjCoordinate(trajectory.get(i).getPos().getXCoord_m(), trajectory.get(i).getPos().getYCoord_m(), trajectory.get(i).getPos().getZCoord_m())), new ProjCoordinate());
             this.waypointSettings.add(wps);
             this.waypointSettings.get(i).heading = (int) yawToHeading((180 / Math.PI) * trajectory.get(i).getPos().getHeading_rad());
-            this.waypointSettings.get(i).geo.z = trajectory.get(i).getPos().getZCoord_m();
+//            this.waypointSettings.get(i).geo.z = trajectory.get(i).getPos().getZCoord_m();
+            this.waypointSettings.get(i).geo.z = 8;
             this.waypointSettings.get(i).speed = (float) trajectory.get(i).getSpd().getLongitudinal_m_s(); //Possible lossy conversion?
             this.waypointSettings.get(i).radius = radii.getEntry(i) - 0.01;
         }
 
         //add landing point
-        // WaypointSetting wps = new WaypointSetting(coordCartToGeo(origin, new ProjCoordinate(0, 0)), new ProjCoordinate());
+        // WaypointSetting wps =  54new WaypointSetting(coordCartToGeo(origin, new ProjCoordinate(0, 0)), new ProjCoordinate());
         // wps.heading = 0;
         // wps.speed = 15;
         // wps.geo.z = 6;
@@ -821,6 +820,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             }
 
         }
+        first = true;
         startWaypointMission();
     }
 
