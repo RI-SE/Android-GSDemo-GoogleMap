@@ -4,30 +4,20 @@ import android.Manifest;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.mlkit.vision.common.InputImage;
-import com.google.mlkit.vision.objects.DetectedObject;
-import com.google.mlkit.vision.objects.ObjectDetection;
-import com.google.mlkit.vision.objects.ObjectDetector;
-import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions;
 
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.DecompositionSolver;
@@ -47,6 +37,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -54,7 +45,6 @@ import org.opencv.objdetect.CascadeClassifier;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.List;
 
 import dji.common.error.DJIError;
 import dji.common.flightcontroller.FlightControllerState;
@@ -95,20 +85,17 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     private static final int MAIN_CAMERA_INDEX = 0;
     private static final int INVAVID_INDEX = -1;
     private static final int MOVE_OFFSET = 20;
-
-
     private static final String TAG = "CHALMERS_DEMO";
     public static WaypointMission.Builder waypointMissionBuilder;
     private final DJIKey trackModeKey = FlightControllerKey.createFlightAssistantKey(FlightControllerKey.ACTIVE_TRACK_MODE);
     public CRSFactory crsFactory = new CRSFactory();
     public CoordinateReferenceSystem WGS84 = crsFactory.createFromParameters("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
+    private VideoFeeder.VideoDataListener mReceivedVideoDataListener;
     View decorView;
     TextureView mVideoSurface;
     float mGimbalRoll;
     float mGimbalYaw;
     float mGimbalPitch;
-    private VideoFeeder.VideoDataListener mReceivedVideoDataListener;
-    private ObjectDetector objectDetector;
     private org.opencv.android.Utils UtilsCV;
     private com.dji.GSDemo.GoogleMap.Utils Utils;
     private String lastDroneState = "";
@@ -195,7 +182,11 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             case R.id.testcircle: {
                 this.waypointSettings.clear();
                 generateTestCircleCoordinates(new LatLng(droneLocationLat, droneLocationLng), 1, 5.0f, 1, 8, false);
-                deployTraj(false);
+                try {
+                    deployTraj();
+                } catch (Exception e){
+                    Log.wtf("ERROR","catch at generateTestCircle" + e.getMessage());
+                }
                 break;
             }
             case R.id.pauseresume: {
@@ -378,17 +369,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         }
     }
 
-    private void initMLObjectDetection() {
-        // Live detection and tracking
-        ObjectDetectorOptions options =
-                new ObjectDetectorOptions.Builder()
-                        .setDetectorMode(ObjectDetectorOptions.STREAM_MODE)
-                        .enableClassification()  // Optional
-                        .build();
-        objectDetector = ObjectDetection.getClient(options);
-
-    }
-
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -409,7 +389,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
         initFlightController();
         initCameraAndGimbal();
-        initMLObjectDetection();
 
         // When the compile and target version is higher than 22, please request the
         // following permissions at runtime to ensure the
@@ -432,67 +411,40 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(DJIDemoApplication.FLAG_CONNECTION_CHANGE);
-        setResultToToast("Setting up mReceivedVideoDataListener");
         mReceivedVideoDataListener = new VideoFeeder.VideoDataListener() {
+
             @Override
             public void onReceive(byte[] videoBuffer, int size) {
                 Log.e("VIDEO", "I am running the function!");
-
+                setResultToToast("WE ARE RUNNING ON RECEIVE");
                 if (mCodecManager != null) {
-                    InputImage image = InputImage.fromByteArray(
-                            videoBuffer,
-                            /* image width */mCodecManager.getVideoWidth(),
-                            /* image height */mCodecManager.getVideoHeight(),
-                            Surface.ROTATION_0,
-                            InputImage.IMAGE_FORMAT_NV21 // or IMAGE_FORMAT_YV12
-                    );
+                    Log.e("VIDEO", "I am running detection!");
+                    Mat mat = Imgcodecs.imdecode(new MatOfByte(videoBuffer), Imgcodecs.IMREAD_UNCHANGED);
+                    Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2GRAY);
+                    // Create a CascadeClassifier object to load the classifier
+                    CascadeClassifier carCascade = new CascadeClassifier("sampledata/humans.xml");
+                    // Detect cars in the image
+                    MatOfRect cars = new MatOfRect();
+                    carCascade.detectMultiScale(mat, cars);
 
-                    objectDetector.process(image)
-                            .addOnSuccessListener(
-                                    new OnSuccessListener<List<DetectedObject>>() {
-                                        @Override
-                                        public void onSuccess(List<DetectedObject> detectedObjects) {
-                                            // Task completed successfully
+                    Rect[] carsArray = cars.toArray();
+                    for (Rect car : carsArray) {
+                        Log.wtf("DETECTION", "Detected object");
+                        Imgproc.rectangle(mat, new Point(car.x, car.y), new Point(car.x + car.width, car.y + car.height), new Scalar(0, 255, 0), 2);
+                    }
 
-                                            Log.wtf("Error", "Detected objects: " + detectedObjects.size());
+                    // Draw a rectangle in the middle of the screen
+                    int rectWidth = mat.width() / 4;
+                    int rectHeight = mat.height() / 4;
+                    int rectX = (mat.width() - rectWidth) / 2;
+                    int rectY = (mat.height() - rectHeight) / 2;
+                    Imgproc.rectangle(mat, new Point(rectX, rectY), new Point(rectX + rectWidth, rectY + rectHeight), new Scalar(255, 0, 0), 2);
 
-//                                        for (DetectedObject detectedObject : detectedObjects) {
-//                                            Rect boundingBox = detectedObject.getBoundingBox();
-//                                            Integer trackingId = detectedObject.getTrackingId();
-//
-//                                            if (detectedObject.getLabels().contains("Car")) {
-//                                                // Adjust gimbal to have the car in the center of the video
-//                                                if (gimbal != null) {
-//                                                    gimbal.rotate(new Rotation.Builder()
-//                                                            .pitch((float) Math.toDegrees(Math.atan((boundingBox.centerY() - mCodecManager.getVideoHeight() / 2.0) / (mCodecManager.getVideoHeight() / 2.0))))
-//                                                            .yaw((float) Math.toDegrees(Math.atan((boundingBox.centerX() - mCodecManager.getVideoWidth() / 2.0) / (mCodecManager.getVideoWidth() / 2.0))))
-//                                                            .build(), new CommonCallbacks.CompletionCallback() {
-//                                                        @Override
-//                                                        public void onResult(DJIError error) {
-//                                                            if (error != null) {
-//                                                                Log.e(TAG, "Failed to rotate gimbal: " + error.getDescription());
-//                                                            }
-//                                                        }
-//                                                    });
-//                                                }
-//                                                break;
-//                                            }
-//                                        }
-                                        }
-                                    })
-                            .addOnFailureListener(
-                                    new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            Log.wtf("ObjectDetection", e.toString());
-                                            // Task failed with an exception
-                                            // ...
-                                        }
-                                    });
-
-                    setResultToToast("WE ARE RUNNING ON RECEIVE");
-
-                    mCodecManager.sendDataToDecoder(videoBuffer, size);
+                    Bitmap bitmap = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    byte[] byteArray = stream.toByteArray();
+                    mCodecManager.sendDataToDecoder(byteArray, byteArray.length);
                 }
             }
         };
@@ -504,16 +456,15 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     public void onExecutionUpdate(WaypointMissionExecutionEvent event) {
         // Handle execution updates here
         WaypointExecutionProgress progress = event.getProgress();
-
-        Log.wtf("Error", "Progress: " + progress.executeState);
-
-        updateMissionButton(("Running " + progress.targetWaypointIndex + "/" + progress.totalWaypointCount), Color.CYAN);
+        Log.wtf("Error", "Pogress" + progress.executeState);
+        updateMissionButton(("Running " + progress.targetWaypointIndex + "/" + progress.totalWaypointCount),Color.CYAN);
         assert progress != null;
         if (progress.isWaypointReached) {
 
             //If we armed and went to first waypoint, stop and wait for running
-            if (progress.targetWaypointIndex == 1 && drone.getCurrentStateName() == "Armed") {
+            if (progress.targetWaypointIndex == 0 && drone.getCurrentStateName() == "Armed") {
                 pauseWaypointMission();
+                setResultToToast("FIRST WAYPOINT REACHED");
             }
 
             // Get gimbal rotation values for the reached waypoint
@@ -555,7 +506,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             updateMissionButton(("Uploading " + event.getProgress().uploadedWaypointIndex + "/" + event.getProgress().totalWaypointCount), Color.CYAN);
         }
     }
-
     @Override
     public void onExecutionStart() {
         // Handle execution start here
@@ -702,27 +652,37 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                         generateWaypointsFromTraj(new LatLng(drone.getOrigin().getLatitude_deg(), drone.getOrigin().getLongitude_deg()), drone.reducedTraj); // use set traj
                     }
                     //generateTestCircleCoordinates(new LatLng(droneLocationLat, droneLocationLng), 10, 3, 1,19, true);
-                    deployTraj(true);
+                    try {
+                        deployTraj();
+                    } catch (Exception e) {
+                        Log.wtf("ERROR","catch at updateDroneLocation:" + e.getMessage());
+                    }
+
                 }
             });
 
             Log.wtf("Error", "Armed");
             lastDroneState = "Armed";
-            updateStateButton(lastDroneState, Color.YELLOW);
 //            startDroneMotors();
-        } else if (drone.getCurrentStateName().equals("Disarmed")) {
 
+        } else if (drone.getCurrentStateName().equals("Disarmed")) {
             Log.wtf("Error", "Disarmed");
             lastDroneState = "Disarmed";
             sendMonr();
             updateStateButton(lastDroneState, Color.YELLOW);
+
         } else if (drone.getCurrentStateName().equals("PreRunning") && lastDroneState != "PreRunning") {
             Log.wtf("Error", "PreRunning");
             lastDroneState = "PreRunning";
-
             updateStateButton(lastDroneState, Color.DKGRAY);
+
         } else if (drone.getCurrentStateName().equals("Running") && lastDroneState != "Running") {
-            resumeWaypointMission();
+            if (getWaypointMissionOperator().getCurrentState() == WaypointMissionState.EXECUTION_PAUSED) {
+                resumeWaypointMission();
+            } else {
+                setResultToToast("WaypointMissionState is not EXECUTION_PAUSED");
+            }
+
             Log.wtf("Error", "Running");
             lastDroneState = "Running";
             updateStateButton(lastDroneState, Color.RED);
@@ -734,6 +694,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             lastDroneState = "NormalStop";
             updateStateButton(lastDroneState, Color.CYAN);
 //            stopDroneRecording();
+
         } else if (drone.getCurrentStateName().equals("EmergencyStop") && lastDroneState != "EmergencyStop") {
             Log.wtf("Error", "EmergencyStop");
             lastDroneState = "EmergencyStop";
@@ -848,7 +809,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     }
 
 
-    private void deployTraj(boolean startMissoinOnUpload) {
+    private void deployTraj() {
         Log.wtf("Error", "Deploying traj");
         waypointMissionBuilder = new WaypointMission.Builder();
 
@@ -875,7 +836,18 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         configWayPointMission();
         //TODO Remove?
         startLatLong = new LatLng(droneLocationLat, droneLocationLng);
-        uploadWayPointMission(startMissoinOnUpload);
+        uploadWayPointMission();
+
+        while(getWaypointMissionOperator().getCurrentState() != WaypointMissionState.READY_TO_EXECUTE) {
+            try {
+                Thread.sleep(1000); // It's ugly, I know.
+            }
+            catch (InterruptedException e) {
+                Log.wtf("ERROR", "WAITING for WaypointMissionState Ready_TO_EXECUTE");
+            }
+
+        }
+        startWaypointMission();
     }
 
 
@@ -990,17 +962,13 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         }
     }
 
-    private void uploadWayPointMission(boolean startMissoinOnUpload) {
+    private void uploadWayPointMission() {
         getWaypointMissionOperator().uploadMission(new CommonCallbacks.CompletionCallback() {
             @Override
             public void onResult(DJIError error) {
                 if (error == null) {
-                    setResultToToast("Mission upload successfully!");
+                    setResultToToast("Mission begun upload successfully!");
                     missionUploaded = true;
-                    if (startMissoinOnUpload) {
-                        startWaypointMission();
-                    }
-
 
                 } else {
                     missionUploaded = false;
@@ -1024,14 +992,13 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     }
 
     private void pauseWaypointMission() {
-        getWaypointMissionOperator().pauseMission(new CommonCallbacks.CompletionCallback() {
-            @Override
-            public void onResult(DJIError error) {
-                setResultToToast("Mission paused: " + (error == null ? "Successfully" : error.getDescription()));
-            }
-        });
+            getWaypointMissionOperator().pauseMission(new CommonCallbacks.CompletionCallback() {
+                @Override
+                public void onResult(DJIError error) {
+                    setResultToToast("Mission paused: " + (error == null ? "Successfully" : error.getDescription()));
+                }
+            });
     }
-
     private void resumeWaypointMission() {
         getWaypointMissionOperator().resumeMission(new CommonCallbacks.CompletionCallback() {
             @Override
