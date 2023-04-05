@@ -46,6 +46,7 @@ import dji.common.mission.waypoint.Waypoint;
 import dji.common.mission.waypoint.WaypointExecutionProgress;
 import dji.common.mission.waypoint.WaypointMission;
 import dji.common.mission.waypoint.WaypointMissionDownloadEvent;
+import dji.common.mission.waypoint.WaypointMissionExecuteState;
 import dji.common.mission.waypoint.WaypointMissionExecutionEvent;
 import dji.common.mission.waypoint.WaypointMissionFinishedAction;
 import dji.common.mission.waypoint.WaypointMissionFlightPathMode;
@@ -108,6 +109,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     private float altitude = 100.0f;
     private LatLng startLatLong;
     private boolean missionUploaded = false;
+    private WaypointMissionExecuteState waypointState;
 
     public double getDroneLocationLat() {
         return droneLocationLat;
@@ -425,11 +427,13 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     public void onExecutionUpdate(WaypointMissionExecutionEvent event) {
         // Handle execution updates here
         WaypointExecutionProgress progress = event.getProgress();
-        Log.wtf("Error", "Pogress" + progress.executeState);
+        waypointState = progress.executeState;
+        Log.wtf("Error", "Pogress: " + progress.executeState);
         updateMissionButton(("Running " + progress.targetWaypointIndex + "/" + progress.totalWaypointCount),Color.CYAN);
         assert progress != null;
         if (progress.isWaypointReached) {
             Log.wtf("Error", "We reached a waypoint");
+            setResultToToast("WE REACHED A WAYPOINT");
 
             //If we armed and went to first waypoint, stop and wait for running
             if (progress.targetWaypointIndex == 0 && drone.getCurrentStateName() == "Armed") {
@@ -647,10 +651,10 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             updateStateButton(lastDroneState, Color.DKGRAY);
 
         } else if (drone.getCurrentStateName().equals("Running") && lastDroneState != "Running") {
-            if (getWaypointMissionOperator().getCurrentState() == WaypointMissionState.EXECUTION_PAUSED) {
+            if (waypointState == WaypointMissionExecuteState.PAUSED) {
                 resumeWaypointMission();
             } else {
-                setResultToToast("WaypointMissionState is not EXECUTION_PAUSED");
+                setResultToToast("WaypointMissionState is not PAUSED");
             }
 
             Log.wtf("Error", "Running");
