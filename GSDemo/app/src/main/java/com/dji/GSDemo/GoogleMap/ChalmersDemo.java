@@ -436,27 +436,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 pauseWaypointMission();
                 setResultToToast("FIRST WAYPOINT REACHED");
             }
-
-            // Get gimbal rotation values for the reached waypoint
-            float newPitch = mGimbalPitch + 5;
-            float newYaw = mGimbalYaw + 1;
-
-            // Create a rotation object with the specified values
-            Rotation rot = new Rotation.Builder()
-                    .pitch(newPitch)
-                    .yaw(newYaw)
-                    .roll(mGimbalRoll)
-                    .mode(RotationMode.ABSOLUTE_ANGLE)
-                    .build();
-
-            // Rotate the gimbal to the specified angles
-//            gimbal.rotate(rot, new CommonCallbacks.CompletionCallback() {
-//                @Override
-//                public void onResult(DJIError error) {
-//                    // Handle gimbal rotation error
-//                    Log.wtf(TAG, "Gimbal rotation:" + (error == null ? "Successfully" : error.getDescription()));
-//                }
-//            });
         }
     }
 
@@ -580,15 +559,16 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         if (drone.getCurrentStateName().equals("Init") && lastDroneState != "Init") {
             Log.wtf("Error", "Init");
             lastDroneState = "Init";
-            updateStateButton(lastDroneState, Color.LTGRAY);
+            updateStateButton(lastDroneState, Color.parseColor("#31d2f2"));
             setDroneHomeLocation();
         } else if (drone.getCurrentStateName().equals("PreArming") && lastDroneState != "PreArming") {
             Log.wtf("Error", "PreArming");
             lastDroneState = "PreArming";
-            updateStateButton(lastDroneState, Color.GRAY);
+            updateStateButton(lastDroneState, Color.parseColor("#ff6600"));
 
         } else if (drone.getCurrentStateName().equals("Armed") && lastDroneState != "Armed") {
             Log.wtf("Error", "Armed");
+            updateStateButton(lastDroneState, Color.parseColor("#ff6600"));
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -638,7 +618,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             Log.wtf("Error", "Disarmed");
             lastDroneState = "Disarmed";
             sendMonr();
-            updateStateButton(lastDroneState, Color.YELLOW);
+            updateStateButton(lastDroneState, Color.parseColor("#ffca2c"));
 
         } else if (drone.getCurrentStateName().equals("PreRunning") && lastDroneState != "PreRunning") {
             Log.wtf("Error", "PreRunning");
@@ -654,21 +634,21 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
             Log.wtf("Error", "Running");
             lastDroneState = "Running";
-            updateStateButton(lastDroneState, Color.RED);
+            updateStateButton(lastDroneState, Color.parseColor("#157347"));
 //            startDroneRecording();
 
         } else if (drone.getCurrentStateName().equals("NormalStop") && lastDroneState != "NormalStop") {
             setResultToToast("NormalStop");
             pauseWaypointMission();
             lastDroneState = "NormalStop";
-            updateStateButton(lastDroneState, Color.CYAN);
+            updateStateButton(lastDroneState, Color.parseColor("#bb2d3b;"));
 //            stopDroneRecording();
 
         } else if (drone.getCurrentStateName().equals("EmergencyStop") && lastDroneState != "EmergencyStop") {
             Log.wtf("Error", "EmergencyStop");
             lastDroneState = "EmergencyStop";
             stopWaypointMission();
-            updateStateButton(lastDroneState, Color.BLACK);
+            updateStateButton(lastDroneState, Color.parseColor("#bb2d3b;"));
 //            stopDroneRecording();
         }
     }
