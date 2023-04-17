@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -104,10 +105,11 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     private ArrayList<WaypointSetting> waypointSettings = new ArrayList<>();
     private ArrayList<Waypoint> waypointList = new ArrayList<>();
     private TextView text_gps, text_lat, text_lon, text_alt;
-    private Button testcircle, config, upload, start, stop, land;
+    private Button config, start, stop, land;
     private Button btn_mission_status, btn_ip_address, btn_drone_state, clear_wps;
 
     private Switch switch_dry_run;
+
     private double droneLocationLat = 57.688859d, droneLocationLng = 11.978795d, droneAltitude = 0d; // Johanneberg
     private float mSpeed = 10.0f;
     private float altitude = 100.0f;
@@ -177,16 +179,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.testcircle: {
-                this.waypointSettings.clear();
-                generateTestCircleCoordinates(new LatLng(droneLocationLat, droneLocationLng), 1, 5.0f, 1, 8, false);
-                try {
-                    deployTraj();
-                } catch (Exception e){
-                    Log.wtf("ERROR","catch at generateTestCircle" + e.getMessage());
-                }
-                break;
-            }
             case R.id.pauseresume: {
                 Button button = (Button) findViewById(R.id.pauseresume);
                 if (button.getText().equals("Pause")) {
@@ -240,15 +232,12 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         text_alt = (TextView) findViewById(R.id.text_alt);
         mVideoSurface = (TextureView) findViewById(R.id.video_previewer_surface);
 
-
-        testcircle = (Button) findViewById(R.id.testcircle);
         config = (Button) findViewById(R.id.pauseresume);
         clear_wps = (Button) findViewById(R.id.clear_wps);
         start = (Button) findViewById(R.id.start);
         stop = (Button) findViewById(R.id.stop);
         land = (Button) findViewById(R.id.land);
 
-        testcircle.setOnClickListener(this);
         config.setOnClickListener(this);
         clear_wps.setOnClickListener(this);
         start.setOnClickListener(this);
@@ -436,15 +425,15 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         updateMissionButton(("Running " + progress.targetWaypointIndex + "/" + progress.totalWaypointCount),Color.CYAN);
         assert progress != null;
         if (progress.isWaypointReached) {
-            Log.wtf("Error", "We reached a waypoint");
-            setResultToToast("WE REACHED A WAYPOINT");
+            Log.wtf("Error", "We reached waypoint: " + progress.targetWaypointIndex);
+//            setResultToToast("WE REACHED A WAYPOINT");
 
             //If we armed and went to first waypoint, stop and wait for running
 //            if (progress.targetWaypointIndex == 0 && drone.getCurrentStateName() == "Armed") {
             if (first) {
                 first=false;
                 pauseWaypointMission();
-                setResultToToast("FIRST WAYPOINT REACHED");
+                setResultToToast("FIRST WAYPOINT REACHED, awaiting ATOS start");
             }
         }
     }
@@ -470,6 +459,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         // Handle execution start here
         Log.wtf(TAG, "WaypointMission was started");
         updateMissionButton("Starting...", Color.GREEN);
+        switch_dry_run.setClickable(false);
     }
 
     @Override
@@ -477,6 +467,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         // Handle execution finish here
         Log.wtf(TAG, "WaypointMission has finished");
         updateMissionButton("Finished", Color.DKGRAY);
+        switch_dry_run.setClickable(true);
 
     }
 
@@ -838,33 +829,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         return yaw_deg;
     }
 
-    private void generateTestCircleCoordinates(LatLng origin, double radius, double altitude, float speed, int nofPoints, boolean headingTowardsCenter) {
-
-        double angularStep = 2 * Math.PI / nofPoints;
-        double currentAngle = 0;
-        double currentAngleRot = 0;
-        int wpHeading = 0;
-        for (int i = 0; i <= nofPoints; i++) {
-
-            if (headingTowardsCenter) {
-                currentAngleRot = rotateUnitCircleAngleToDroneYawRad(currentAngle, Math.PI);
-            } else currentAngleRot = currentAngle;
-            wpHeading = convertToDroneYawRangeDeg((180 / Math.PI) * currentAngleRot);
-
-            WaypointSetting wps = new WaypointSetting(coordCartToGeo(origin, new ProjCoordinate(radius * Math.cos(currentAngle), radius * Math.sin(currentAngle), 0)), new ProjCoordinate());
-            this.waypointSettings.add(wps);
-            this.waypointSettings.get(i).heading = wpHeading;
-            this.waypointSettings.get(i).geo.z = altitude;
-            this.waypointSettings.get(i).speed = speed;
-            currentAngle += angularStep;
-        }
-        WaypointSetting wps = new WaypointSetting(coordCartToGeo(origin, new ProjCoordinate(0, 0)), new ProjCoordinate());
-        wps.heading = 0;
-        wps.speed = speed;
-        wps.geo.z = altitude;
-        this.waypointSettings.add(wps);
-    }
-
     private Double rotateUnitCircleAngleToNorthHeadingRad(double yaw) {
         Double yawRot = 0.0;
         if (yaw >= 0 && yaw <= Math.PI / 2) yawRot = Math.PI / 2 - yaw;
@@ -941,7 +905,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
     private void startWaypointMission() {
      if (!runTest) {
-         setResultToToast("Dry run is enabled, will not run");
+         setResultToToast("Dry run is enabled, toggle switch for flight");
          return;
      }
 
@@ -950,7 +914,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             @Override
             public void onResult(DJIError error) {
                 setResultToToast("Mission Start: " + (error == null ? "Successfully" : error.getDescription()));
-                switch_dry_run.setClickable(false);
             }
         });
     }
@@ -978,7 +941,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             @Override
             public void onResult(DJIError error) {
                 setResultToToast("Mission Stop: " + (error == null ? "Successfully" : error.getDescription()));
-                switch_dry_run.setClickable(true);
             }
         });
 

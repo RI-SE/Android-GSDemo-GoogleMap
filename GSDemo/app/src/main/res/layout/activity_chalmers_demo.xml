@@ -174,12 +174,6 @@
                 android:layout_height="wrap_content"
                 android:text="Clear WPS" />
 
-            <Button
-                android:id="@+id/testcircle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/clear_wps"
-                android:text="Test Circle" />
 
             <Button
                 android:id="@+id/start"
