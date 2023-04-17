@@ -11,6 +11,9 @@ import android.util.Log;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -71,7 +74,7 @@ import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKManager;
 
 
-public class ChalmersDemo extends FragmentActivity implements TextureView.SurfaceTextureListener, View.OnClickListener, WaypointMissionOperatorListener {
+public class ChalmersDemo extends FragmentActivity implements TextureView.SurfaceTextureListener, View.OnClickListener, WaypointMissionOperatorListener, CompoundButton.OnCheckedChangeListener {
 
     private static final int MAIN_CAMERA_INDEX = 0;
     private static final int INVAVID_INDEX = -1;
@@ -102,13 +105,16 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     private ArrayList<Waypoint> waypointList = new ArrayList<>();
     private TextView text_gps, text_lat, text_lon, text_alt;
     private Button testcircle, config, upload, start, stop, land;
-    private Button btn_mission_status, btn_drone_con, btn_ip_address, btn_drone_state, clear_wps;
+    private Button btn_mission_status, btn_ip_address, btn_drone_state, clear_wps;
 
+    private Switch switch_dry_run;
     private double droneLocationLat = 57.688859d, droneLocationLng = 11.978795d, droneAltitude = 0d; // Johanneberg
     private float mSpeed = 10.0f;
     private float altitude = 100.0f;
     private LatLng startLatLong;
     private boolean missionUploaded = false;
+
+    private boolean runTest = false;
     private WaypointMissionExecuteState waypointState;
     private boolean first;
 
@@ -219,9 +225,11 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
     private void initUI() {
         btn_mission_status = (Button) findViewById(R.id.btn_mission_status);
-        btn_drone_con = (Button) findViewById(R.id.btn_drone_con);
         btn_drone_state = (Button) findViewById(R.id.btn_drone_state);
         btn_ip_address = (Button) findViewById(R.id.btn_ip_address);
+
+        switch_dry_run = (Switch) findViewById(R.id.switch_dry_run);
+        switch_dry_run.setClickable(true);
 
         btn_ip_address.setText(Utils.getIPAddress(true));
         btn_drone_state.setText("State: Undefined");
@@ -246,6 +254,8 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         start.setOnClickListener(this);
         stop.setOnClickListener(this);
         land.setOnClickListener(this);
+
+        switch_dry_run.setOnCheckedChangeListener(this);
 
         if (null != mVideoSurface) {
 //            mVideoSurface.setSurfaceTextureListener(this);
@@ -481,10 +491,8 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         BaseProduct product = DJIDemoApplication.getProductInstance();
 
         if (product == null || !product.isConnected()) {
-            btn_drone_con.setBackgroundColor(Color.RED);
             setResultToToast(getString(R.string.disconnected));
         } else {
-            btn_drone_con.setBackgroundColor(Color.GREEN);
             if (null != mVideoSurface) {
                 mVideoSurface.setSurfaceTextureListener(this);
             }
@@ -932,14 +940,20 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     }
 
     private void startWaypointMission() {
-        if (flightController != null) {
-            getWaypointMissionOperator().startMission(new CommonCallbacks.CompletionCallback() {
-                @Override
-                public void onResult(DJIError error) {
-                    setResultToToast("Mission Start: " + (error == null ? "Successfully" : error.getDescription()));
-                }
-            });
-        }
+     if (!runTest) {
+         setResultToToast("Dry run is enabled, will not run");
+         return;
+     }
+
+    if (flightController != null)  {
+        getWaypointMissionOperator().startMission(new CommonCallbacks.CompletionCallback() {
+            @Override
+            public void onResult(DJIError error) {
+                setResultToToast("Mission Start: " + (error == null ? "Successfully" : error.getDescription()));
+                switch_dry_run.setClickable(false);
+            }
+        });
+    }
     }
 
     private void pauseWaypointMission() {
@@ -964,6 +978,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             @Override
             public void onResult(DJIError error) {
                 setResultToToast("Mission Stop: " + (error == null ? "Successfully" : error.getDescription()));
+                switch_dry_run.setClickable(true);
             }
         });
 
@@ -1028,4 +1043,13 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     }
 
 
+    @Override
+    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+        if (!b) {
+            runTest = true;
+            setResultToToast("Dry run is switched OFF");
+        } else {
+            setResultToToast("Dry run is switched ON");
+        }
+    }
 }

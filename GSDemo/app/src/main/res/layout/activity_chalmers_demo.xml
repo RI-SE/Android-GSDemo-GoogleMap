@@ -27,18 +27,6 @@
             android:src="@drawable/astazero" />
 
         <Button
-            android:id="@+id/btn_drone_con"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:layout_gravity="center"
-            android:background="@android:color/holo_red_light"
-            android:enabled="false"
-            android:paddingStart="6dp"
-            android:paddingEnd="6dp"
-            android:text="DRONE CONNECTION"
-            android:textColor="@android:color/white" />
-
-        <Button
             android:id="@+id/btn_ip_address"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
@@ -76,6 +64,20 @@
             android:paddingEnd="6dp"
             android:text="MISSION: NOT UPLOADED"
             android:textColor="@android:color/white" />
+
+        <Switch
+            android:id="@+id/switch_dry_run"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:layout_marginStart="20dp"
+            android:text="Dry Run"
+            android:textColor="@android:color/white"
+            android:background="@android:color/transparent"
+            android:thumbTint="@color/colorWhite"
+            android:trackTint="@color/colorLightGrey"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"/>
 
     </LinearLayout>
 
@@ -130,6 +132,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/text_gps"
+                android:paddingStart="5dp"
                 android:text="LAT: "
                 android:textSize="20dp"
                 android:textColor="#D40000"/>
@@ -139,6 +142,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/text_lat"
+                android:paddingStart="5dp"
                 android:layout_weight="1"
                 android:text="LON: "
                 android:textSize="20dp"
@@ -149,6 +153,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/text_lon"
+                android:paddingStart="5dp"
                 android:layout_weight="1"
                 android:text="ALT: "
                 android:textSize="20dp"
