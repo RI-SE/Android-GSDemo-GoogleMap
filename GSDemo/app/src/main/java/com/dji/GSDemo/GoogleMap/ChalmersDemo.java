@@ -313,10 +313,8 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                 }
             });
             flightController.setStateCallback(new FlightControllerState.Callback() {
-
                 @Override
                 public void onUpdate(FlightControllerState djiFlightControllerCurrentState) {
-
                     GPSSignalLevel gps = djiFlightControllerCurrentState.getGPSSignalLevel();
                     droneLocationLat = djiFlightControllerCurrentState.getAircraftLocation().getLatitude();
                     droneLocationLng = djiFlightControllerCurrentState.getAircraftLocation().getLongitude();
@@ -565,7 +563,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
 
     private void updateDroneLocationData() {
-
         if (lastDroneState == "") {
             drone = new IsoDrone(Utils.getIPAddress(true));
             lastDroneState = drone.getCurrentStateName();
