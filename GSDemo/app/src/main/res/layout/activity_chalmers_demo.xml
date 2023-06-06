@@ -161,7 +161,7 @@
         </RelativeLayout>
 
         <RelativeLayout
-            android:layout_width="100dp"
+            android:layout_width="150dp"
             android:layout_height="match_parent"
             android:layout_alignParentRight="true"
             android:background="@android:color/darker_gray"

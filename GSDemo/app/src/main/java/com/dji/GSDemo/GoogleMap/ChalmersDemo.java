@@ -163,7 +163,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
         super.onDestroy();
 //        unregisterReceiver(mReceiver) ;
-//        removeListener();
     }
 
     @Override
@@ -245,19 +244,11 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         land.setOnClickListener(this);
 
         switch_dry_run.setOnCheckedChangeListener(this);
-
-        if (null != mVideoSurface) {
-//            mVideoSurface.setSurfaceTextureListener(this);
-
-        }
     }
 
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-//        Log.e(TAG, "onSurfaceTextureAvailable");
-//
-//
         if (mCodecManager == null) {
             mCodecManager = new DJICodecManager(this, surface, width, height);
         }
@@ -304,7 +295,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         }
 
         if (flightController != null) {
-//            flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
             flightController.setHomeLocationUsingAircraftCurrentLocation(new CommonCallbacks.CompletionCallback() {
                 @Override
                 public void onResult(DJIError error) {
@@ -426,8 +416,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         assert progress != null;
         if (progress.isWaypointReached) {
             Log.wtf("Error", "We reached waypoint: " + progress.targetWaypointIndex);
-//            setResultToToast("WE REACHED A WAYPOINT");
-
+            //TODO: Did not get targetWaypointIndex to work, using dummy variable instead
             //If we armed and went to first waypoint, stop and wait for running
 //            if (progress.targetWaypointIndex == 0 && drone.getCurrentStateName() == "Armed") {
             if (first) {
@@ -502,15 +491,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
         }
     }
 
-    private void startDroneMotors() {
-        flightController.turnOnMotors(new CommonCallbacks.CompletionCallback() {
-            @Override
-            public void onResult(DJIError djiError) {
-                Log.wtf("Error", (djiError == null ? "Started drone motors." : djiError.getDescription()));
-            }
-        });
-    }
-
     private void setDroneHomeLocation() {
         flightController.setHomeLocationUsingAircraftCurrentLocation(new CommonCallbacks.CompletionCallback() {
             @Override
@@ -546,7 +526,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             lastDroneState = drone.getCurrentStateName();
         }
 //        Log.wtf("Error", "Drone is in: " + drone.getCurrentStateName());
-        //SetMonr data
         //Log.wtf("Lat: ", String.valueOf(drone.getOrigin().getLatitude_deg()));
         //Log.wtf("Log: ", String.valueOf(drone.getOrigin().getLongitude_deg()));
         //Log.wtf("alt: ", String.valueOf(drone.getOrigin().getAltitude_m()));
@@ -567,7 +546,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
         } else if (drone.getCurrentStateName().equals("Armed") && lastDroneState != "Armed") {
             Log.wtf("Error", "Armed");
-            updateStateButton(lastDroneState, Color.parseColor("#ff6600"));
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -578,13 +556,13 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                     setResultToToast("Initial size:" + traj.size());
                     //Reduce points in traj if to large (99 max amount of waypoints)
                     if (traj.size() > 99) {
-                        double epsilon = 0.1;
+                        double epsilon = 0.001;
                         do {
                             Log.wtf(TAG, "Running with epsilon: " + epsilon);
                             drone.reducePoints(epsilon);
                             epsilon += 0.1;
                             setResultToToast("reducing traj");
-                        } while (drone.getReducedTraj().size() > 99 && epsilon < 10); //0.06
+                        } while (drone.getReducedTraj().size() > 99 && epsilon < 0.06);
                         Log.wtf("newTraj", String.valueOf(drone.getReducedTraj().size()));
                         waypointSettings.clear();
                         setResultToToast("peucker Traj: " + String.valueOf(drone.getReducedTraj().size()));
@@ -599,7 +577,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
                         setResultToToast("remove points to close: " + String.valueOf(drone.getReducedTraj().size()));
                         generateWaypointsFromTraj(new LatLng(drone.getOrigin().getLatitude_deg(), drone.getOrigin().getLongitude_deg()), drone.reducedTraj); // use set traj
                     }
-                    //generateTestCircleCoordinates(new LatLng(droneLocationLat, droneLocationLng), 10, 3, 1,19, true);
                     try {
                         deployTraj();
                     } catch (Exception e) {
@@ -611,7 +588,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
             Log.wtf("Error", "Armed");
             lastDroneState = "Armed";
-//            startDroneMotors();
+            updateStateButton(lastDroneState, Color.parseColor("#ff6600"));
 
         } else if (drone.getCurrentStateName().equals("Disarmed")) {
             Log.wtf("Error", "Disarmed");
@@ -634,21 +611,21 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             Log.wtf("Error", "Running");
             lastDroneState = "Running";
             updateStateButton(lastDroneState, Color.parseColor("#157347"));
-//            startDroneRecording();
+            startDroneRecording();
 
         } else if (drone.getCurrentStateName().equals("NormalStop") && lastDroneState != "NormalStop") {
             setResultToToast("NormalStop");
             pauseWaypointMission();
             lastDroneState = "NormalStop";
             updateStateButton(lastDroneState, Color.parseColor("#bb2d3b;"));
-//            stopDroneRecording();
+            stopDroneRecording();
 
         } else if (drone.getCurrentStateName().equals("EmergencyStop") && lastDroneState != "EmergencyStop") {
             Log.wtf("Error", "EmergencyStop");
             lastDroneState = "EmergencyStop";
             stopWaypointMission();
             updateStateButton(lastDroneState, Color.parseColor("#bb2d3b;"));
-//            stopDroneRecording();
+            stopDroneRecording();
         }
     }
 
@@ -719,9 +696,6 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
 
     private void generateWaypointsFromTraj(LatLng origin, TrajectoryWaypointVector trajectory) {
-
-        //Add extra point before first point to correct heading
-        //add trajPoints
         RealMatrix A = MatrixUtils.createRealMatrix(trajectory.size(), trajectory.size());
         ArrayRealVector b = new ArrayRealVector(trajectory.size());
         for (int i = 0; i < trajectory.size(); ++i) {
@@ -744,17 +718,11 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             this.waypointSettings.add(wps);
             this.waypointSettings.get(i).heading = (int) yawToHeading((180 / Math.PI) * trajectory.get(i).getPos().getHeading_rad());
 //            this.waypointSettings.get(i).geo.z = trajectory.get(i).getPos().getZCoord_m();
+            //TODO: Do not use hardcoded Z value
             this.waypointSettings.get(i).geo.z = 8;
             this.waypointSettings.get(i).speed = (float) trajectory.get(i).getSpd().getLongitudinal_m_s(); //Possible lossy conversion?
             this.waypointSettings.get(i).radius = radii.getEntry(i) - 0.01;
         }
-
-        //add landing point
-        // WaypointSetting wps =  54new WaypointSetting(coordCartToGeo(origin, new ProjCoordinate(0, 0)), new ProjCoordinate());
-        // wps.heading = 0;
-        // wps.speed = 15;
-        // wps.geo.z = 6;
-        // this.waypointSettings.add(wps);
     }
 
 
@@ -789,15 +757,14 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
 
         while(getWaypointMissionOperator().getCurrentState() != WaypointMissionState.READY_TO_EXECUTE) {
             try {
-                Thread.sleep(1000); // It's ugly, I know.
+                Thread.sleep(1000); // It's ugly, I know. Need to wait for upload to finish
             }
             catch (InterruptedException e) {
                 Log.wtf("ERROR", "WAITING for WaypointMissionState Ready_TO_EXECUTE");
             }
-
         }
-        first = true;
         startWaypointMission();
+        first = true;
     }
 
 
@@ -904,10 +871,11 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     }
 
     private void startWaypointMission() {
-     if (!runTest) {
-         setResultToToast("Dry run is enabled, toggle switch for flight");
-         return;
-     }
+        //TODO: Not tested.
+//     if (!runTest) {
+//         setResultToToast("Dry run is enabled, toggle switch for flight");
+//         return;
+//     }
 
     if (flightController != null)  {
         getWaypointMissionOperator().startMission(new CommonCallbacks.CompletionCallback() {
@@ -979,6 +947,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
     }
 
 
+    //TODO: Use function when object detection has been implemented
     private void changeGimbalAngles(float pitch, float yaw, float roll) {
         if (gimbal == null) return;
         Log.wtf("GIMBAL", "Changing gimbal angle...");
@@ -1012,6 +981,7 @@ public class ChalmersDemo extends FragmentActivity implements TextureView.Surfac
             setResultToToast("Dry run is switched OFF");
         } else {
             setResultToToast("Dry run is switched ON");
+            runTest = false;
         }
     }
 }

@@ -114,6 +114,9 @@ public class IsoDrone extends TestObject{
         int index = 0;
         boolean isColinearY = true;
         boolean isColinearX = true;
+        boolean isColinear = true;
+
+
 
         final int start = s;
         final int end = e-1;
@@ -128,6 +131,11 @@ public class IsoDrone extends TestObject{
             final double wx = traj.get(end).getPos().getXCoord_m();
             final double wy = traj.get(end).getPos().getYCoord_m();
             final double d = perpendicularDistance(px, py, vx, vy, wx, wy);
+            double res = (wx -vx) * (px -vy) - (wy-vy) * (px-vx);
+
+            if (res != 0) {
+                isColinear = false;
+            }
 
             if (vx != px) isColinearX = false;
             if (vy != py) isColinearY = false;
@@ -139,18 +147,17 @@ public class IsoDrone extends TestObject{
 
         // IF straight line, just remove points so we get maxSize traj
         if (isColinearX || isColinearY) {
+            //TODO Use the res variable to control if it's colinear or not. Did not work on test, might need tolerances
             int multiplier = Math.round(traj.size() / maxNumOfPoints);
             //Make sure we are not stuck in infinite loop
-            if (multiplier == 0) multiplier = 1;
-            for (int i = 0; i < traj.size(); i+= multiplier) {
+            if (multiplier < 1) multiplier = 1;
+            for (int i = 0; i < 98 && i < traj.size(); i+= 1) {
                 resultTraj.add(traj.get(i));
             }
-            //Add endpoint to traj
-//            resultTraj.add(traj.get(end));
             return;
         }
 
-        // If max distance is greater than epsilon, call recursively
+//         If max distance is greater than epsilon, call recursively
         if (dmax > epsilon) {
             douglasPeucker(traj, s, index, epsilon, resultTraj);
             douglasPeucker(traj, index, e, epsilon, resultTraj);
