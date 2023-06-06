@@ -1,5 +1,7 @@
 package com.dji.GSDemo.GoogleMap;
 
+import static java.lang.Math.round;
+
 import android.util.Log;
 import android.widget.EditText;
 
@@ -9,7 +11,8 @@ import org.locationtech.proj4j.ProjCoordinate;
 public class IsoDrone extends TestObject{
 
     public TrajectoryWaypointVector reducedTraj;
-    private double mReduction = 1;
+    private double mReduction = 1.0;
+    private static int maxNumOfPoints = 99;
    IsoDrone(String ip) {
        super(ip);
 
@@ -109,6 +112,11 @@ public class IsoDrone extends TestObject{
         // Find the point with the maximum distance
         double dmax = 0;
         int index = 0;
+        boolean isColinearY = true;
+        boolean isColinearX = true;
+        boolean isColinear = true;
+
+
 
         final int start = s;
         final int end = e-1;
@@ -123,13 +131,33 @@ public class IsoDrone extends TestObject{
             final double wx = traj.get(end).getPos().getXCoord_m();
             final double wy = traj.get(end).getPos().getYCoord_m();
             final double d = perpendicularDistance(px, py, vx, vy, wx, wy);
+            double res = (wx -vx) * (px -vy) - (wy-vy) * (px-vx);
+
+            if (res != 0) {
+                isColinear = false;
+            }
+
+            if (vx != px) isColinearX = false;
+            if (vy != py) isColinearY = false;
             if (d > dmax) {
                 index = i;
                 dmax = d;
             }
         }
 
-        // If max distance is greater than epsilon, call recursively
+        // IF straight line, just remove points so we get maxSize traj
+        if (isColinearX || isColinearY) {
+            //TODO Use the res variable to control if it's colinear or not. Did not work on test, might need tolerances
+            int multiplier = Math.round(traj.size() / maxNumOfPoints);
+            //Make sure we are not stuck in infinite loop
+            if (multiplier < 1) multiplier = 1;
+            for (int i = 0; i < 98 && i < traj.size(); i+= 1) {
+                resultTraj.add(traj.get(i));
+            }
+            return;
+        }
+
+//         If max distance is greater than epsilon, call recursively
         if (dmax > epsilon) {
             douglasPeucker(traj, s, index, epsilon, resultTraj);
             douglasPeucker(traj, index, e, epsilon, resultTraj);

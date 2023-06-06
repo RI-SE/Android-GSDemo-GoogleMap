@@ -41,6 +41,7 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
     private static final String TAG = ConnectionActivity.class.getName();
 
     private TextView mTextConnectionStatus;
+
     private TextView mTextProduct;
     private TextView mVersionTv;
     private Button mBtnOpen;
@@ -62,6 +63,7 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
     private List<String> missingPermission = new ArrayList<>();
     private AtomicBoolean isRegistrationInProgress = new AtomicBoolean(false);
     private static final int REQUEST_PERMISSION_CODE = 12345;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
