@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:textAlignment="center"
+    tools:context=".ChalmersDemo">
+
+    <LinearLayout
+        android:id="@+id/topLayout"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@color/cast_intro_overlay_background_color"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="126dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:paddingStart="0dp"
+            android:paddingEnd="-80dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/astazero" />
+
+        <Button
+            android:id="@+id/btn_ip_address"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:layout_marginStart="15dp"
+            android:background="@android:color/darker_gray"
+            android:enabled="false"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:text="IP-Address"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/btn_drone_state"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:layout_marginStart="20dp"
+            android:background="@android:color/holo_red_light"
+            android:enabled="false"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:text="DRONE STATE"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/btn_mission_status"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:layout_marginStart="20dp"
+            android:background="@android:color/holo_red_light"
+            android:enabled="false"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:text="MISSION: NOT UPLOADED"
+            android:textColor="@android:color/white" />
+
+        <Switch
+            android:id="@+id/switch_dry_run"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:layout_marginStart="20dp"
+            android:text="Dry Run"
+            android:textColor="@android:color/white"
+            android:background="@android:color/transparent"
+            android:thumbTint="@color/colorWhite"
+            android:trackTint="@color/colorLightGrey"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"/>
+
+    </LinearLayout>
+
+    <TextureView
+        android:id="@+id/video_previewer_surface"
+        android:layout_width="640dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/topLayout"/>
+
+    <ImageView
+        android:id="@+id/tracking_send_rect_iv"
+        android:layout_width="150dp"
+        android:layout_height="100dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/black_rectangle"
+        android:visibility="invisible" />
+
+    <ImageView
+        android:id="@+id/tracking_rst_rect_iv"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/visual_track_lowconfidence"
+        android:visibility="invisible" />
+
+    <RelativeLayout
+        android:layout_below="@+id/topLayout"
+        android:id = '@+id/main_title_rl'
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RelativeLayout
+        android:layout_below="@+id/topLayout"
+        android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/gps_data"
+            >
+
+            <TextView
+                android:id="@+id/text_gps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/gps_data"
+                android:paddingStart="5dp"
+                android:text="GPS LEVEL: "
+                android:textSize="20dp"
+                android:textColor="#D40000"/>
+
+            <TextView
+                android:id="@+id/text_lat"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/text_gps"
+                android:paddingStart="5dp"
+                android:text="LAT: "
+                android:textSize="20dp"
+                android:textColor="#D40000"/>
+
+            <TextView
+                android:id="@+id/text_lon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/text_lat"
+                android:paddingStart="5dp"
+                android:layout_weight="1"
+                android:text="LON: "
+                android:textSize="20dp"
+                android:textColor="#D40000"/>
+
+            <TextView
+                android:id="@+id/text_alt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/text_lon"
+                android:paddingStart="5dp"
+                android:layout_weight="1"
+                android:text="ALT: "
+                android:textSize="20dp"
+                android:textColor="#D40000"/>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:background="@android:color/darker_gray"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/clear_wps"
+                android:layout_alignParentTop="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Clear WPS" />
+
+
+            <Button
+                android:id="@+id/start"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/testcircle"
+                android:text="Start" />
+
+            <Button
+                android:id="@+id/pauseresume"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/start"
+                android:layout_gravity="center_horizontal"
+                android:text="Pause" />
+
+
+            <Button
+                android:id="@+id/stop"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/pauseresume"
+                android:layout_gravity="center_horizontal"
+                android:text="Stop" />
+
+            <Button
+                android:id="@+id/land"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/stop"
+                android:text="Land" />
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>
